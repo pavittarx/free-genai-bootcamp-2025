@@ -11,6 +11,8 @@
 
 [Grok](./grok)
 
+[Gemini](./gemini)
+
 
 ## Business Goal
 The goal is to build a techning guide than can help students to learn Hindi in absence of a teacher in an interactive way. 
