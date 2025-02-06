@@ -10,6 +10,8 @@ It is propertiary model, and does not share any info about itself. Not even the 
 [See here](./prompt.md)
 
 ### Observations / Learnings
+- Grok does not perform as well in comparison to Meta AI / ChatGpt. 
+- The message limit exceeded so appropriate state was not reached. 
 
 ### Prompting Guides
 No specific prompting guides are officially available by Grok, only API docs are available. \ 
