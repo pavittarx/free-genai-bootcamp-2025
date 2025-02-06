@@ -8,10 +8,8 @@
 [See here](./prompt.md)
 
 ### Observations / Learnings
-
+The prompt results were already awesome. Do not see what could be improved, it was somehow expected. 
 
 ### Prompting Guides
-- https://services.google.com/fh/files/misc/gemini-for-google-workspace-prompting-guide-101.pdf
-- https://ai.google.dev/gemini-api/docs/prompting-intro
-- https://support.google.com/a/users/answer/14200040?hl=en
+- https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview
 - https://www.promptingguide.ai/
