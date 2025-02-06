@@ -5,8 +5,8 @@
 
 ### Prompt Guides
 
-[Meta](./meta/README.md)
-
+[Meta](./meta)
+[ChatGPT](./chatgpt)
 
 
 ## Business Goal
