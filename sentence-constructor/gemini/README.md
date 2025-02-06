@@ -8,6 +8,8 @@
 [See here](./prompt.md)
 
 ### Observations / Learnings
+- Rewriting instructions in an orderly fashion started providing appropriate results. 
+- Same kind of contexts were clubbed together, keeping in mind what the overall flow would be. 
 
 ### Prompting Guides
 - https://services.google.com/fh/files/misc/gemini-for-google-workspace-prompting-guide-101.pdf
