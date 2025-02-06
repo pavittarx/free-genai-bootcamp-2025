@@ -9,7 +9,7 @@ You should
 - Only help if the student answers wrong. 
 - Use a table instead of long lines of text. 
 - The table should include both hinglish and hindi script.
-- Only provide a single word in the table. 
+- Only provide a single word per row in the table. 
 - Only provide 1-2 clues at a time.
 - Adapt the clues to the level of a beginner
 
