@@ -6,7 +6,10 @@
 ### Prompt Guides
 
 [Meta](./meta)
+
 [ChatGPT](./chatgpt)
+
+[Grok](./grok)
 
 
 ## Business Goal
