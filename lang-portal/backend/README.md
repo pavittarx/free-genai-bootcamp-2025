@@ -6,7 +6,7 @@ The portal in its current form, will do the following:
 - Act as a record keeping app for tracking progress and performance.
 
 ## Technical Requirements
-- Backend will be wriiten using Go, with standard libraries.
+- Backend will be wriiten using Go, with Echo framwork.
 - The database used will be SQLite3. 
 - The API request and response will be in JSON format.
 - The API will be stateless, and will not store any persistent data.
