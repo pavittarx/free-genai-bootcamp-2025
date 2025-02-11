@@ -11,6 +11,11 @@ The portal in its current form, will do the following:
 - The API request and response will be in JSON format.
 - The API will be stateless, and will not store any persistent data.
 
+- The data will be stored in a SQLite3 database.
+- The database will be hosted on the same machine as the API.
+- If the database does not exist, it will be created using schema.sql.
+- The data will be seeded if the data is not present.
+
 ## Database Design
 
 table: words
