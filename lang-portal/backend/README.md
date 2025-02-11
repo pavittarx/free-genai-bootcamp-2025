@@ -145,12 +145,17 @@ erDiagram
 
 - /api/study-activities
 - /api/sessions
-- /api/session-activity
+- /api/sessions/:id
+
+- /api/sessions
+- /api/sessions/:id/activity
 
 [POST]
 - /api/sessions
-- /api/session-activity
+- /api/sessions/:id/activity
 
 [PUT]
 - /api/sessions
-- /api/session-activity
+
+[DELETE]
+- /api/reset
