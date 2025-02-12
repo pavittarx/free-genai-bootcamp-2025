@@ -11,33 +11,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupGroupServiceTest(t *testing.T) (*services.GroupService, *repository.SQLiteGroupRepository, func()) {
+func setupGroupTest(t *testing.T) (*services.GroupService, func()) {
 	db, cleanup, err := testutils.CreateTestDB()
 	if err != nil {
 		t.Fatalf("Failed to create test database: %v", err)
 	}
 
-	// Create groups table
-	_, err = db.Exec(`
-		CREATE TABLE groups (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-	if err != nil {
-		cleanup()
-		t.Fatalf("Failed to create groups table: %v", err)
-	}
+	groupRepo := repository.NewSQLiteGroupRepository(db)
+	groupService := services.NewGroupService(groupRepo)
 
-	repo := repository.NewSQLiteGroupRepository(db)
-	service := services.NewGroupService(repo)
-
-	return service, repo, cleanup
+	return groupService, cleanup
 }
 
 func TestGroupService_CreateGroup(t *testing.T) {
-	service, _, cleanup := setupGroupServiceTest(t)
+	service, cleanup := setupGroupTest(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -84,7 +71,7 @@ func TestGroupService_CreateGroup(t *testing.T) {
 }
 
 func TestGroupService_GetGroupByID(t *testing.T) {
-	service, _, cleanup := setupGroupServiceTest(t)
+	service, cleanup := setupGroupTest(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -111,7 +98,7 @@ func TestGroupService_GetGroupByID(t *testing.T) {
 }
 
 func TestGroupService_UpdateGroup(t *testing.T) {
-	service, _, cleanup := setupGroupServiceTest(t)
+	service, cleanup := setupGroupTest(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -148,7 +135,7 @@ func TestGroupService_UpdateGroup(t *testing.T) {
 }
 
 func TestGroupService_DeleteGroup(t *testing.T) {
-	service, _, cleanup := setupGroupServiceTest(t)
+	service, cleanup := setupGroupTest(t)
 	defer cleanup()
 
 	ctx := context.Background()
@@ -178,7 +165,7 @@ func TestGroupService_DeleteGroup(t *testing.T) {
 }
 
 func TestGroupService_ListGroups(t *testing.T) {
-	service, _, cleanup := setupGroupServiceTest(t)
+	service, cleanup := setupGroupTest(t)
 	defer cleanup()
 
 	ctx := context.Background()

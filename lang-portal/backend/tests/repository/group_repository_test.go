@@ -16,19 +16,6 @@ func setupGroupTest(t *testing.T) (*repository.SQLiteGroupRepository, func()) {
 		t.Fatalf("Failed to create test database: %v", err)
 	}
 
-	// Create groups table
-	_, err = db.Exec(`
-		CREATE TABLE groups (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-	if err != nil {
-		cleanup()
-		t.Fatalf("Failed to create groups table: %v", err)
-	}
-
 	repo := repository.NewSQLiteGroupRepository(db)
 	return repo, cleanup
 }

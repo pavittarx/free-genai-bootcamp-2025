@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS words (
     english TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 `
 
 // CreateTestDB creates a temporary SQLite database for testing
