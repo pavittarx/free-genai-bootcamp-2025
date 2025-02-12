@@ -3,7 +3,11 @@
     <Sidebar />
     <main class="flex-1 px-6 py-8 bg-gray-50 overflow-hidden">
       <!-- Groups Table -->
-      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div v-if="loading" class="text-center py-4">Loading groups...</div>
+      <div v-else-if="error" class="text-red-500 text-center py-4">
+        {{ error }}
+      </div>
+      <div v-else class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="p-4 flex justify-between items-center border-b">
           <h2 class="text-lg font-bold text-gray-800">Groups</h2>
           <div class="flex space-x-3">
@@ -20,28 +24,22 @@
           <table class="w-full">
             <thead class="bg-gray-50">
               <tr>
-                <th class="table-header w-16">#</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-16">#</th>
                 <th 
-                  @click="sortBy('name')"
-                  class="table-header"
+                  @click="sortBy('group')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                 >
                   Group Name
-                  <span v-if="sortColumn === 'name'" class="ml-1">
+                  <span v-if="sortColumn === 'group'" class="ml-1">
                     {{ sortDirection === 'asc' ? '↑' : '↓' }}
                   </span>
                 </th>
-                <th class="table-header">
-                  Description
-                </th>
-                <th class="table-header w-24 text-center">
-                  Word Count
-                </th>
                 <th 
-                  @click="sortBy('createdAt')"
-                  class="table-header w-32"
+                  @click="sortBy('created_at')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-32"
                 >
                   Created
-                  <span v-if="sortColumn === 'createdAt'" class="ml-1">
+                  <span v-if="sortColumn === 'created_at'" class="ml-1">
                     {{ sortDirection === 'asc' ? '↑' : '↓' }}
                   </span>
                 </th>
@@ -51,17 +49,19 @@
               <tr 
                 v-for="(group, index) in paginatedGroups" 
                 :key="group.id"
-                class="table-row cursor-pointer hover:bg-gray-50"
+                class="hover:bg-gray-50 transition-colors cursor-pointer"
                 @click="navigateToGroup(group.id)"
               >
-                <td class="table-cell text-gray-500 w-16">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-16">
                   {{ (currentPage - 1) * pageSize + index + 1 }}
                 </td>
-                <td class="table-cell font-medium">{{ group.name }}</td>
-                <td class="table-cell text-gray-500">{{ group.description }}</td>
-                <td class="table-cell text-center font-medium">{{ group.wordCount }}</td>
-                <td class="table-cell text-gray-500 w-32">
-                  {{ formatDate(group.createdAt) }}
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">{{ group.group }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
+                  {{ new Date(group.created_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  }) }}
                 </td>
               </tr>
             </tbody>
@@ -98,77 +98,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '~/components/Sidebar.vue'
+import { useGroupService, type Group } from '~/services/groupService'
 
-// Enhanced group interface with more details
-interface Group {
-  id: number
-  name: string
-  description: string
-  wordCount: number
-  createdAt: Date | string
-}
-
-// Mock data (to be replaced with actual API call)
-const groups = ref<Group[]>([
-  { 
-    id: 1, 
-    name: 'Basic Vocabulary', 
-    description: 'Essential words for beginners',
-    wordCount: 50,
-    createdAt: new Date('2024-01-15') 
-  },
-  { 
-    id: 2, 
-    name: 'Conversational Hindi', 
-    description: 'Phrases for everyday conversations',
-    wordCount: 75,
-    createdAt: new Date('2024-01-20') 
-  },
-  { 
-    id: 3, 
-    name: 'Advanced Phrases', 
-    description: 'Complex expressions and idioms',
-    wordCount: 30,
-    createdAt: new Date('2024-02-01') 
-  }
-])
+const router = useRouter()
+const { groups, loading, error, fetchGroups } = useGroupService()
 
 // Pagination
 const pageSize = 20
 const currentPage = ref(1)
 const searchQuery = ref('')
-const sortColumn = ref<keyof Group>('createdAt')
-const sortDirection = ref<'asc' | 'desc'>('desc')
+const sortColumn = ref<keyof Group>('group')
+const sortDirection = ref<'asc' | 'desc'>('asc')
 
-const router = useRouter()
+// Fetch groups on component mount
+onMounted(async () => {
+  await fetchGroups({ 
+    page: currentPage.value, 
+    limit: pageSize, 
+    search: searchQuery.value 
+  })
+})
 
-// Computed properties for filtering, sorting, and pagination
+// Computed properties for filtering and sorting
 const filteredGroups = computed(() => {
   return groups.value.filter(group => 
     !searchQuery.value || 
-    ['name', 'description'].some(field => 
-      group[field as keyof Group]
-        .toString()
-        .toLowerCase()
-        .includes(searchQuery.value.toLowerCase())
-    )
+    group.group.toLowerCase().includes(searchQuery.value.toLowerCase())
   ).sort((a, b) => {
     const modifier = sortDirection.value === 'asc' ? 1 : -1
-    
-    const createdAtA = a.createdAt instanceof Date 
-      ? a.createdAt 
-      : new Date(a.createdAt)
-    const createdAtB = b.createdAt instanceof Date 
-      ? b.createdAt 
-      : new Date(b.createdAt)
-    
-    if (sortColumn.value === 'createdAt') {
-      return (createdAtA.getTime() > createdAtB.getTime() ? 1 : -1) * modifier
-    }
-    
     return a[sortColumn.value].toString().localeCompare(
       b[sortColumn.value].toString()
     ) * modifier
@@ -185,19 +145,29 @@ const paginatedGroups = computed(() => {
 })
 
 // Methods
-function nextPage(): void {
+function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
+    fetchGroups({ 
+      page: currentPage.value, 
+      limit: pageSize, 
+      search: searchQuery.value 
+    })
   }
 }
 
-function prevPage(): void {
+function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
+    fetchGroups({ 
+      page: currentPage.value, 
+      limit: pageSize, 
+      search: searchQuery.value 
+    })
   }
 }
 
-function sortBy(column: keyof Group): void {
+function sortBy(column: keyof Group) {
   if (sortColumn.value === column) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -206,33 +176,17 @@ function sortBy(column: keyof Group): void {
   }
 }
 
-function formatDate(date: Date | string): string {
-  const dateObj = date instanceof Date 
-    ? date 
-    : new Date(date)
-  
-  return dateObj.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  })
-}
-
-function navigateToGroup(groupId: number): void {
+function navigateToGroup(groupId: number) {
   router.push(`/groups/${groupId}`)
 }
+
+// Watch for search query changes
+watch(searchQuery, () => {
+  currentPage.value = 1
+  fetchGroups({ 
+    page: currentPage.value, 
+    limit: pageSize, 
+    search: searchQuery.value 
+  })
+})
 </script>
-
-<style scoped>
-.table-header {
-  @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors;
-}
-
-.table-cell {
-  @apply px-4 py-4 whitespace-nowrap text-sm;
-}
-
-.table-row {
-  @apply hover:bg-gray-50 transition-colors;
-}
-</style>

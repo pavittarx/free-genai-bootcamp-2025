@@ -1,49 +1,49 @@
-
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
 import Sidebar from '~/components/Sidebar.vue'
-import { useGroupService, type GroupWord, type Group } from '~/services/groupService'
-
-const route = useRoute()
-const groupId = Number(route.params.id)
+import { useWordService, type Word } from '~/services/wordService'
 
 const { 
-  groupWords, 
+  words, 
   loading, 
   error, 
-  getGroupById, 
-  fetchGroupWords 
-} = useGroupService()
+  fetchWords 
+} = useWordService()
 
 // Pagination
 const pageSize = 20
 const currentPage = ref(1)
 const searchQuery = ref('')
-const sortColumn = ref<keyof GroupWord>('created_at')
+const sortColumn = ref<keyof Word>('created_at')
 const sortDirection = ref<'asc' | 'desc'>('desc')
 
-// Group details
-const groupDetails = ref<Group | null>(null)
+// Error handling
+const apiError = ref<string | null>(null)
 
-// Fetch group details and words on component mount
-onMounted(async () => {
-  // Fetch group details
-  groupDetails.value = await getGroupById(groupId)
+// Fetch words on component mount
+async function loadWords() {
+  try {
+    apiError.value = null
+    await fetchWords({ 
+      page: currentPage.value, 
+      limit: pageSize, 
+      search: searchQuery.value 
+    })
+  } catch (err) {
+    apiError.value = err instanceof Error 
+      ? err.message 
+      : 'Failed to load words from the server'
+    console.error('Words page load error:', err)
+  }
+}
 
-  // Fetch group words
-  await fetchGroupWords(groupId, { 
-    page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
-  })
-})
+onMounted(loadWords)
 
 // Computed properties for filtering and sorting
 const filteredWords = computed(() => {
-  return groupWords.value.filter(word => 
+  return words.value.filter(word => 
     !searchQuery.value || 
-    (['hindi', 'hinglish', 'english'] as (keyof GroupWord)[]).some(field => {
+    (['hindi', 'hinglish', 'english'] as (keyof Word)[]).some(field => {
       const value = word[field]
       return typeof value === 'string' && 
         value.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -71,26 +71,18 @@ const paginatedWords = computed(() => {
 function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
-    fetchGroupWords(groupId, { 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
+    loadWords()
   }
 }
 
 function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
-    fetchGroupWords(groupId, { 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
+    loadWords()
   }
 }
 
-function sortBy(column: keyof GroupWord) {
+function sortBy(column: keyof Word) {
   if (sortColumn.value === column) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
@@ -102,11 +94,7 @@ function sortBy(column: keyof GroupWord) {
 // Watch for search query changes
 watch(searchQuery, () => {
   currentPage.value = 1
-  fetchGroupWords(groupId, { 
-    page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
-  })
+  loadWords()
 })
 </script>
 
@@ -114,28 +102,24 @@ watch(searchQuery, () => {
   <div class="h-screen w-screen overflow-hidden flex">
     <Sidebar />
     <main class="flex-1 px-6 py-8 bg-gray-50 overflow-hidden">
-      <!-- Group Details -->
-      <div v-if="loading" class="text-center py-4">Loading group details...</div>
-      <div v-else-if="error" class="text-red-500 text-center py-4">
-        {{ error }}
+      <!-- API Error Display -->
+      <div 
+        v-if="apiError" 
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" 
+        role="alert"
+      >
+        <strong class="font-bold">Error: </strong>
+        <span class="block sm:inline">{{ apiError }}</span>
       </div>
-      <div v-else-if="groupDetails" class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="p-4 border-b">
-          <h2 class="text-lg font-bold text-gray-800">
-            {{ groupDetails.group }}
-          </h2>
-          <p class="text-sm text-gray-500 mt-1">
-            Created on: {{ new Date(groupDetails.created_at).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }) }}
-          </p>
-        </div>
 
-        <!-- Words Table -->
+      <!-- Words Table -->
+      <div v-if="loading" class="text-center py-4">Loading words...</div>
+      <div v-else-if="words.length === 0 && !apiError" class="text-center py-4">
+        No words found.
+      </div>
+      <div v-else-if="!apiError" class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="p-4 flex justify-between items-center border-b">
-          <h3 class="text-md font-semibold text-gray-700">Words in this Group</h3>
+          <h2 class="text-lg font-bold text-gray-800">Words</h2>
           <div class="flex space-x-3">
             <input 
               v-model="searchQuery"
@@ -150,13 +134,13 @@ watch(searchQuery, () => {
           <table class="w-full">
             <thead class="bg-gray-50">
               <tr>
-                <th class="table-header w-16">#</th>
-                <th class="table-header">Hindi</th>
-                <th class="table-header">Hinglish</th>
-                <th class="table-header">English</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-16">#</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Hindi</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Hinglish</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">English</th>
                 <th 
                   @click="sortBy('created_at')"
-                  class="table-header w-32"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-32"
                 >
                   Created
                   <span v-if="sortColumn === 'created_at'" class="ml-1">
@@ -169,15 +153,15 @@ watch(searchQuery, () => {
               <tr 
                 v-for="(word, index) in paginatedWords" 
                 :key="word.id"
-                class="table-row hover:bg-gray-50"
+                class="hover:bg-gray-50 transition-colors"
               >
-                <td class="table-cell text-gray-500 w-16">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-16">
                   {{ (currentPage - 1) * pageSize + index + 1 }}
                 </td>
-                <td class="table-cell font-medium">{{ word.hindi }}</td>
-                <td class="table-cell">{{ word.hinglish }}</td>
-                <td class="table-cell">{{ word.english }}</td>
-                <td class="table-cell text-gray-500 w-32">
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">{{ word.hindi }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.hinglish }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.english }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
                   {{ new Date(word.created_at).toLocaleDateString('en-US', { 
                     year: 'numeric', 
                     month: 'short', 
@@ -214,23 +198,9 @@ watch(searchQuery, () => {
           </div>
         </div>
       </div>
-      <div v-else class="text-center py-4 text-gray-500">
-        Group not found
-      </div>
     </main>
   </div>
 </template>
 
 <style scoped>
-.table-header {
-  @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors;
-}
-
-.table-cell {
-  @apply px-4 py-4 whitespace-nowrap text-sm;
-}
-
-.table-row {
-  @apply hover:bg-gray-50 transition-colors;
-}
 </style>

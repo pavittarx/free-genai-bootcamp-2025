@@ -99,20 +99,27 @@ This execution plan outlines the step-by-step approach for developing the fronte
 - [x] Add sorting and filtering capabilities
 
 ### Groups Development
-- [ ] Create groups table
-- [ ] Design table columns:
-  - [ ] Serial Number
-  - [ ] Group Name
-  - [ ] Created At
-- [ ] Implement group row navigation
-- [ ] Create individual group details
-  - [ ] Display group name
-  - [ ] Create words table for group
-    - [ ] Serial Number
-    - [ ] Hindi
-    - [ ] Hinglish
-    - [ ] English
-    - [ ] Created At
+- [x] Create groups table
+- [x] Design table columns:
+  - [x] Serial Number
+  - [x] Group Name
+  - [x] Description
+  - [x] Word Count
+  - [x] Created At
+- [x] Implement group row navigation
+- [x] Create individual group details
+  - [x] Display group name
+  - [x] Create words table for group
+    - [x] Serial Number
+    - [x] Hindi
+    - [x] Hinglish
+    - [x] English
+    - [x] Created At
+- [x] Add Lucide icons to groups pages
+- [x] Implement pagination
+- [x] Add sorting and filtering capabilities
+- [x] Improve type safety
+- [x] Fix lint errors
 
 ### Study Activities
 - [ ] Design study activity cards
