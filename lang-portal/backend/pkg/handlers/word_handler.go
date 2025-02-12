@@ -35,6 +35,13 @@ func (h *WordHandler) CreateWord(c echo.Context) error {
 		})
 	}
 
+	// Validate the word
+	if err := word.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
 	// Create the word
 	if err := h.wordService.CreateWord(c.Request().Context(), word); err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
