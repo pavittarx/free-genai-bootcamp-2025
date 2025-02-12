@@ -88,15 +88,15 @@ This execution plan outlines the step-by-step approach for developing the fronte
 - [x] Implement data fetching with Tanstack Query
 
 ### Words Development
-- [ ] Create words table
-- [ ] Implement pagination (20 items per page)
-- [ ] Design table columns:
-  - [ ] Serial Number
-  - [ ] Hindi
-  - [ ] Hinglish
-  - [ ] English
-  - [ ] Created At
-- [ ] Add sorting and filtering capabilities
+- [x] Create words table
+- [x] Implement pagination (20 items per page)
+- [x] Design table columns:
+  - [x] Serial Number
+  - [x] Hindi
+  - [x] Hinglish
+  - [x] English
+  - [x] Created At
+- [x] Add sorting and filtering capabilities
 
 ### Groups Development
 - [ ] Create groups table
