@@ -8,7 +8,7 @@ import (
 	"github.com/pavittarx/lang-portal/pkg/services"
 )
 
-// WordHandler manages HTTP handlers for word-related endpoints
+// WordHandler manages HTTP handlers for word-related operations
 type WordHandler struct {
 	wordService *services.WordService
 }
@@ -23,31 +23,37 @@ func NewWordHandler(wordService *services.WordService) *WordHandler {
 // GetRandomWord handles the GET request to retrieve a random word
 func (h *WordHandler) GetRandomWord(c echo.Context) error {
 	ctx := c.Request().Context()
-	
-	// Get optional query parameters
+
+	// Parse optional difficulty and group parameters
 	difficulty := c.QueryParam("difficulty")
-	groupName := c.QueryParam("group")
-	
-	var groupNamePtr *string
-	if groupName != "" {
-		groupNamePtr = &groupName
+	groupIDStr := c.QueryParam("group")
+
+	var groupID *int64
+	if groupIDStr != "" {
+		parsedGroupID, err := strconv.ParseInt(groupIDStr, 10, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": "Invalid group ID",
+			})
+		}
+		groupID = &parsedGroupID
 	}
-	
+
 	// Get random word
-	word, err := h.wordService.GetRandomWord(ctx, difficulty, groupNamePtr)
+	word, err := h.wordService.GetRandomWord(ctx, difficulty, groupID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to retrieve random word",
+			"error": "Failed to retrieve random word: " + err.Error(),
 		})
 	}
-	
+
 	return c.JSON(http.StatusOK, word)
 }
 
-// GetWordDetails handles the GET request to retrieve details of a specific word
+// GetWordDetails handles the GET request to retrieve word details
 func (h *WordHandler) GetWordDetails(c echo.Context) error {
 	ctx := c.Request().Context()
-	
+
 	// Get word ID from URL parameter
 	wordIDStr := c.Param("id")
 	wordID, err := strconv.ParseInt(wordIDStr, 10, 64)
@@ -56,32 +62,38 @@ func (h *WordHandler) GetWordDetails(c echo.Context) error {
 			"error": "Invalid word ID",
 		})
 	}
-	
+
 	// Get word details
 	word, err := h.wordService.GetWordDetails(ctx, wordID)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"error": "Word not found",
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve word details: " + err.Error(),
 		})
 	}
-	
+
 	return c.JSON(http.StatusOK, word)
 }
 
-// ListWordsByGroup handles the GET request to retrieve words in a specific group
+// ListWordsByGroup handles the GET request to retrieve words in a group
 func (h *WordHandler) ListWordsByGroup(c echo.Context) error {
 	ctx := c.Request().Context()
-	
-	// Get group name from URL parameter
-	groupName := c.Param("group")
-	
-	// Get words in the group
-	words, err := h.wordService.ListWordsByGroup(ctx, groupName)
+
+	// Get group ID from URL parameter
+	groupIDStr := c.Param("group")
+	groupID, err := strconv.ParseInt(groupIDStr, 10, 64)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to retrieve words for group",
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid group ID",
 		})
 	}
-	
+
+	// Get words in the group
+	words, err := h.wordService.ListWordsByGroup(ctx, groupID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve words for group: " + err.Error(),
+		})
+	}
+
 	return c.JSON(http.StatusOK, words)
 }

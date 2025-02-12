@@ -8,7 +8,7 @@
    - [x] Initialize Go module
    - [x] Set up dependency management
    - [x] Configure database (SQLite)
-   - [ ] **Set up Echo web framework**
+   - [x] **Set up Echo web framework**
      - Install Echo framework
      - Configure basic server structure
      - Set up initial routing
@@ -16,7 +16,7 @@
      - Create application context
 
 2. **Dependency Management**
-   - [ ] Install core dependencies
+   - [x] Install core dependencies
      ```bash
      go get github.com/labstack/echo/v4
      go get github.com/mattn/go-sqlite3
@@ -33,17 +33,17 @@
 1. **Word Domain**
    - [x] Define Word model
    - [x] Create Word validation logic
-   - [ ] Implement Word-related interfaces
+   - [x] Implement Word-related interfaces
 
 2. **Group Domain**
    - [x] Define Group model
    - [x] Create Group validation logic
-   - [ ] Implement Group-related interfaces
+   - [x] Implement Group-related interfaces
 
 3. **Word Group Domain**
-   - [ ] Define WordGroup model
-   - [ ] Create WordGroup validation logic
-   - [ ] Implement WordGroup repository
+   - [x] Define WordGroup model
+   - [x] Create WordGroup validation logic
+   - [x] Implement WordGroup repository
 
 ### Phase 3: Repository Layer
 1. **Word Repositories**
@@ -57,7 +57,7 @@
    - [ ] Add group filtering methods
 
 3. **Word Group Repositories**
-   - [ ] Implement SQLite WordGroup repository
+   - [x] Implement SQLite WordGroup repository
    - [ ] Create WordGroup query methods
 
 ### Phase 4: Service Layer

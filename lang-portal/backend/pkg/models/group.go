@@ -1,5 +1,9 @@
 package models
 
+import (
+	"errors"
+)
+
 // Group represents a category of words
 type Group struct {
 	ID          int64  `json:"id" db:"id"`
@@ -9,22 +13,22 @@ type Group struct {
 
 // GroupFilter allows filtering and searching groups
 type GroupFilter struct {
-	Name        *string
-	Description *string
+	Name string
 }
 
 // Validate checks if the group meets basic validation criteria
 func (g *Group) Validate() error {
+	// Ensure name is not empty
 	if g.Name == "" {
-		return ErrInvalidGroup
+		return errors.New("group name cannot be empty")
 	}
-	return nil
-}
 
-// WordGroup represents the many-to-many relationship between words and groups
-type WordGroup struct {
-	WordID  int64 `json:"word_id" db:"word_id"`
-	GroupID int64 `json:"group_id" db:"group_id"`
+	// Optionally, add more validation rules
+	if len(g.Name) > 100 {
+		return errors.New("group name cannot exceed 100 characters")
+	}
+
+	return nil
 }
 
 // Custom errors

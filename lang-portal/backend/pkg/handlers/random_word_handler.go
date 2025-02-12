@@ -21,24 +21,37 @@ func NewRandomWordHandler(wordService *services.WordService) *RandomWordHandler 
 
 // GetRandomWord handles the GET request to retrieve a random word
 func (h *RandomWordHandler) GetRandomWord(c echo.Context) error {
-	ctx := c.Request().Context()
-	
-	// Get optional query parameters
+	// Extract query parameters
 	difficulty := c.QueryParam("difficulty")
-	groupName := c.QueryParam("group")
-	
-	var groupNamePtr *string
-	if groupName != "" {
-		groupNamePtr = &groupName
+	groupNamePtr := c.QueryParam("group")
+
+	var groupID *int64
+	if groupNamePtr != "" {
+		// Find group ID by name
+		groups, err := h.wordService.GroupRepo.List(c.Request().Context())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve groups")
+		}
+
+		for _, g := range groups {
+			if g.Name == groupNamePtr {
+				groupIDVal := g.ID
+				groupID = &groupIDVal
+				break
+			}
+		}
+
+		if groupID == nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Group not found")
+		}
 	}
-	
+
 	// Get random word
-	word, err := h.wordService.GetRandomWord(ctx, difficulty, groupNamePtr)
+	word, err := h.wordService.GetRandomWord(c.Request().Context(), difficulty, groupID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to retrieve random word: " + err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve random word")
 	}
-	
+
+	// Return the word
 	return c.JSON(http.StatusOK, word)
 }
