@@ -102,7 +102,3 @@ CREATE INDEX IF NOT EXISTS idx_groups_name ON groups(name);
 CREATE INDEX IF NOT EXISTS idx_sessions_activity ON sessions(activity_id);
 CREATE INDEX IF NOT EXISTS idx_session_activities_session ON session_activities(session_id);
 CREATE INDEX IF NOT EXISTS idx_session_activities_activity ON session_activities(activity_id);
-
--- Example of inserting a word with Hindi script
--- INSERT INTO words (hindi, scrambled, hinglish, english) 
--- VALUES ('नमस्ते', 'तेमनस', 'Namaste', 'Hello');

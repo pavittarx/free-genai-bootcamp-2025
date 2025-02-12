@@ -2,21 +2,25 @@
 
 ## Project Structure and Implementation Roadmap
 
+- Refer to README.md for technical requirements and project details
+- Refer to lang-portal/code-conventions.md for project structure, code formatting and best practices
+- Data models, methods, API handlers must remain aligned with what has been provided in lang-portal/README file. 
+
 ### Phase 1: Core Infrastructure Setup
 1. **Project Initialization**
-   - [x] Create project directory structure
-   - [x] Initialize Go module
-   - [x] Set up dependency management
-   - [x] Configure database (SQLite)
-   - [x] **Set up Echo web framework**
-     - Install Echo framework
-     - Configure basic server structure
-     - Set up initial routing
-     - Implement basic middleware
-     - Create application context
+   - [ ] Create project directory structure
+   - [ ] Initialize Go module
+   - [ ] Set up dependency management
+   - [ ] Configure database (SQLite)
+   - [ ] **Set up Echo web framework**
+     - [ ] Install Echo framework
+     - [ ] Configure basic server structure
+     - [ ] Set up initial routing
+     - [ ] Implement basic middleware
+     - [ ] Create application context
 
 2. **Dependency Management**
-   - [x] Install core dependencies
+   - [ ] Install core dependencies
      ```bash
      go get github.com/labstack/echo/v4
      go get github.com/mattn/go-sqlite3
@@ -25,70 +29,89 @@
      ```
 
 3. **Database Preparation**
-   - [x] Create initial migration scripts
-   - [x] Develop seed data generation
-   - [x] Implement database initialization script
+   - [ ] Create initial migration scripts
+   - [ ] Develop seed data generation
+   - [ ] Implement database initialization script
 
 ### Phase 2: Core Domain Models
 1. **Word Domain**
-   - [x] Define Word model
-   - [x] Create Word validation logic
-   - [x] Implement Word-related interfaces
+   - [ ] Define Word model
+   - [ ] Create Word validation logic
+   - [ ] Implement Word-related interfaces
 
 2. **Group Domain**
-   - [x] Define Group model
-   - [x] Create Group validation logic
-   - [x] Implement Group-related interfaces
+   - [ ] Define Group model
+   - [ ] Create Group validation logic
+   - [ ] Implement Group-related interfaces
 
 3. **Word Group Domain**
-   - [x] Define WordGroup model
-   - [x] Create WordGroup validation logic
-   - [x] Implement WordGroup repository
+   - [ ] Define WordGroup model
+   - [ ] Create WordGroup validation logic
+   - [ ] Implement WordGroup repository
 
 ### Phase 3: Repository Layer
 1. **Word Repositories**
-   - [x] Implement SQLite Word repository
-   - [x] Create Word query interfaces
-   - [x] Add complex query methods
+   - [ ] Implement SQLite Word repository
+   - [ ] Create Word query interfaces
+   - [ ] Create Word query methods
 
 2. **Group Repositories**
-   - [x] Implement SQLite Group repository
-   - [x] Create Group query interfaces
-   - [x] Add group filtering methods
+   - [ ] Implement SQLite Group repository
+   - [ ] Create Group query interfaces
+   - [ ] Create Group query methods
 
 3. **Word Group Repositories**
-   - [x] Implement SQLite WordGroup repository
-   - [x] Create WordGroup query methods
+   - [ ] Implement SQLite WordGroup repository
+   - [ ] Create WordGroup query methods
 
 ### Phase 4: Service Layer
 1. **Word Services**
-   - [x] Implement random word retrieval
-   - [x] Create word details service
+   - [ ] Implement random word retrieval
+   - [ ] Create word details service
    - [ ] Add word search and filtering services
+     - [ ] Implement complex word search method
+     - [ ] Add word statistics retrieval
+   - [ ] Implement word import/export services
 
 2. **Group Services**
-   - [x] Implement group listing
+   - [ ] Implement group listing
    - [ ] Add group search and filtering services
+     - [ ] Implement complex group search method
+     - [ ] Add group statistics retrieval
 
 3. **Word Group Services**
    - [ ] Implement word group relationship services
+     - [ ] Add word to group
+     - [ ] Remove word from group
+     - [ ] Get groups for a word
+     - [ ] Get words in a group
+     - [ ] Get word-group relationship statistics
 
 ### Phase 5: Handler Layer
 1. **Word Handlers**
-   - [x] Create random word endpoint handler
-   - [x] Implement word details handler
+   - [ ] Create random word endpoint handler
+   - [ ] Implement word details handler
    - [ ] Add word search and filtering handlers
+     - [ ] Implement word search endpoint
+     - [ ] Add word statistics endpoint
 
 2. **Group Handlers**
-   - [x] Implement group listing handler
-   - [x] `/api/groups` (paginated group list)
-     - [x] Implement repository method for listing groups
-     - [x] Create service layer for group listing
-     - [x] Develop handler for paginated group retrieval
+   - [ ] Implement group listing handler
+   - [ ] `/api/groups` (paginated group list)
+     - [ ] Implement repository method for listing groups
+     - [ ] Create service layer for group listing
+     - [ ] Develop handler for paginated group retrieval
    - [ ] Add group search and filtering handlers
+     - [ ] Implement group search endpoint
+     - [ ] Add group statistics endpoint
 
 3. **Word Group Handlers**
    - [ ] Create word group relationship handlers
+     - [ ] Add word to group endpoint
+     - [ ] Remove word from group endpoint
+     - [ ] Get groups for a word endpoint
+     - [ ] Get words in a group endpoint
+     - [ ] Get word-group relationship statistics endpoint
 
 ### Phase 6: Study Activity Domain
 1. **Study Activity Models**
@@ -155,16 +178,16 @@
      - Implement repository method for listing words
      - Create service layer for word listing
      - Develop handler for paginated word retrieval
-   - [x] `/api/words/random` (random word)
-     - [x] Implement random word retrieval logic
-     - [x] Create service method
-     - [x] Develop handler
+   - [ ] `/api/words/random` (random word)
+     - Implement random word retrieval logic
+     - Create service method
+     - Develop handler
 
 2. **Group Endpoints**
-   - [x] `/api/groups` (paginated group list)
-     - [x] Implement repository method for listing groups
-     - [x] Create service layer for group listing
-     - [x] Develop handler for paginated group retrieval
+   - [ ] `/api/groups` (paginated group list)
+     - Implement repository method for listing groups
+     - Create service layer for group listing
+     - Develop handler for paginated group retrieval
    - [ ] `/api/groups/:id/words` (words in a specific group)
      - Implement repository method to fetch words by group
      - Create service method for group-specific word retrieval

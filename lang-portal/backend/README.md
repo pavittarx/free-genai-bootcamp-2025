@@ -4,6 +4,8 @@ The portal in its current form, will do the following:
 - Act as a launchpad for different study activities.
 - Store Language words and sentences, that would aid in learning activities. 
 - Act as a record keeping app for tracking progress and performance.
+- The project only uses a single language, Hindi.
+- The project does not have any complex functionlity, so the scope must be kept in check.
 
 ## Technical Requirements
 - Backend will be wriiten using Go, with Echo framwork.
