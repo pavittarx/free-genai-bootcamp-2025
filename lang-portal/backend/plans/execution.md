@@ -1,272 +1,355 @@
 # Language Portal Backend - Execution Plan
 
-## Project Structure and Implementation Roadmap
+## General Instructions
+- Only follow the database schema/structure defined in "lang-portal/README.md"
+- At each phase follow the conventions defined in "code-conventions.md"
 
-- Refer to README.md for technical requirements and project details
-- Refer to lang-portal/code-conventions.md for project structure, code formatting and best practices
-- Data models, methods, API handlers must remain aligned with what has been provided in lang-portal/README file. 
+## Project Development Phases
 
-### Phase 1: Core Infrastructure Setup
-1. **Project Initialization**
-   - [ ] Create project directory structure
-   - [ ] Initialize Go module
-   - [ ] Set up dependency management
-   - [ ] Configure database (SQLite)
-   - [ ] **Set up Echo web framework**
-     - [ ] Install Echo framework
-     - [ ] Configure basic server structure
-     - [ ] Set up initial routing
-     - [ ] Implement basic middleware
-     - [ ] Create application context
+### Phase 0: Project Setup and Initial Configuration
+- [ ] Create project directory structure
+  - [ ] Create `cmd/` directory for main application
+    - [ ] Create `server/main.go` entry point
+  - [ ] Create `pkg/` directories
+    - [ ] `models/`
+    - [ ] `handlers/`
+    - [ ] `services/`
+    - [ ] `repository/`
+  - [ ] Create `internal/` directories
+    - [ ] `config/`
+    - [ ] `middleware/`
+  - [ ] Create `db/` directories
+    - [ ] `migrations/`
+    - [ ] `seeds/`
+  - [ ] Create `scripts/` directory
+  - [ ] Create `tests/` directory
 
-2. **Dependency Management**
-   - [ ] Install core dependencies
-     ```bash
-     go get github.com/labstack/echo/v4
-     go get github.com/mattn/go-sqlite3
-     go get github.com/golang-migrate/migrate/v4
-     go mod tidy
-     ```
+- [ ] Initialize Go Module and Dependencies
+  - [ ] Run `go mod init`
+  - [ ] Add core dependencies
+    - [ ] Echo framework
+    - [ ] SQLite driver
+    - [ ] Migration tool
+    - [ ] Logging library
+  - [ ] Configure `go.mod` and `go.sum`
+  - [ ] Run `go mod tidy`
 
-3. **Database Preparation**
-   - [ ] Create initial migration scripts
-   - [ ] Develop seed data generation
-   - [ ] Implement database initialization script
+- [ ] Database Configuration
+  - [ ] Design initial database schema
+  - [ ] Create migration scripts for:
+    - [ ] Words table
+    - [ ] Groups table
+    - [ ] Word-Groups table
+    - [ ] Study Activities table
+    - [ ] Sessions table
+    - [ ] Session Activities table
+  - [ ] Prepare seed data CSV files
+  - [ ] Create database initialization script
 
-### Phase 2: Core Domain Models
-1. **Word Domain**
-   - [ ] Define Word model
-   - [ ] Create Word validation logic
-   - [ ] Implement Word-related interfaces
+- [ ] Server Configuration
+  - [ ] Create main application entry point
+  - [ ] Configure Echo framework
+  - [ ] Set up server to run on port 3000
+  - [ ] Implement graceful shutdown
+  - [ ] Add basic logging middleware
+  - [ ] Set up error handling middleware
 
-2. **Group Domain**
-   - [ ] Define Group model
-   - [ ] Create Group validation logic
-   - [ ] Implement Group-related interfaces
+- [ ] Development Tooling
+  - [ ] Set up linting (golangci-lint)
+  - [ ] Configure CI/CD pipeline
+  - [ ] Add Makefile for common tasks
 
-3. **Word Group Domain**
-   - [ ] Define WordGroup model
-   - [ ] Create WordGroup validation logic
-   - [ ] Implement WordGroup repository
+### Phase 1: Words Module Development
+#### 1.1 Word Model
+- [ ] Define Word struct in `pkg/models/word.go`
+  - [ ] Add fields: ID, Hindi, Scrambled, Hinglish, English
+  - [ ] Implement validation methods
+    - [ ] Validate word text length
+    - [ ] Validate language constraints
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
+  - [ ] Implement custom validation logic
 
-### Phase 3: Repository Layer
-1. **Word Repositories**
-   - [ ] Implement SQLite Word repository
-   - [ ] Create Word query interfaces
-   - [ ] Create Word query methods
+- [ ] Write Word model tests
+  - [ ] Test struct creation
+  - [ ] Test validation logic
+  - [ ] Test JSON serialization
 
-2. **Group Repositories**
-   - [ ] Implement SQLite Group repository
-   - [ ] Create Group query interfaces
-   - [ ] Create Group query methods
+#### 1.2 Word Repository
+- [ ] Create Word repository in `pkg/repository/word_repository.go`
+  - [ ] Implement Create method
+  - [ ] Implement GetByID method
+  - [ ] Implement Update method
+  - [ ] Implement Delete method
+  - [ ] Implement List method with pagination
+  - [ ] Implement Search method
+  - [ ] Implement GetRandom method
+  - [ ] Implement GetByLanguage method
+  - [ ] Add error handling for each method
 
-3. **Word Group Repositories**
-   - [ ] Implement SQLite WordGroup repository
-   - [ ] Create WordGroup query methods
+- [ ] Write Word repository tests
+  - [ ] Test CRUD operations
+  - [ ] Test pagination
+  - [ ] Test search functionality
+  - [ ] Test random word retrieval
+  - [ ] Test language-specific retrieval
+  - [ ] Test error scenarios
 
-### Phase 4: Service Layer
-1. **Word Services**
-   - [ ] Implement random word retrieval
-   - [ ] Create word details service
-   - [ ] Add word search and filtering services
-     - [ ] Implement complex word search method
-     - [ ] Add word statistics retrieval
-   - [ ] Implement word import/export services
+#### 1.3 Word Service
+- [ ] Create Word service in `pkg/services/word_service.go`
+  - [ ] Define service interface
+  - [ ] Implement service methods
+    - [ ] Word creation with validation
+    - [ ] Word retrieval methods
+    - [ ] Word search and filtering
+    - [ ] Random word selection
+    - [ ] Language-specific word retrieval
+  - [ ] Implement business logic
+  - [ ] Add comprehensive error handling
 
-2. **Group Services**
-   - [ ] Implement group listing
-   - [ ] Add group search and filtering services
-     - [ ] Implement complex group search method
-     - [ ] Add group statistics retrieval
+- [ ] Write Word service tests
+  - [ ] Test business logic
+  - [ ] Test error scenarios
+  - [ ] Test service method interactions
 
-3. **Word Group Services**
-   - [ ] Implement word group relationship services
-     - [ ] Add word to group
-     - [ ] Remove word from group
-     - [ ] Get groups for a word
-     - [ ] Get words in a group
-     - [ ] Get word-group relationship statistics
+#### 1.4 Word Handlers
+- [ ] Create Word handlers in `pkg/handlers/word_handler.go`
+  - [ ] Implement HTTP handlers for:
+    - [ ] GET /api/words (list words)
+    - [ ] GET /api/words/:id (get word details)
+    - [ ] GET /api/words/random (get random word)
+    - [ ] POST /api/words (create word)
+    - [ ] PUT /api/words/:id (update word)
+    - [ ] DELETE /api/words/:id (delete word)
+  - [ ] Add request validation
+  - [ ] Implement error responses
+  - [ ] Add logging
 
-### Phase 5: Handler Layer
-1. **Word Handlers**
-   - [ ] Create random word endpoint handler
-   - [ ] Implement word details handler
-   - [ ] Add word search and filtering handlers
-     - [ ] Implement word search endpoint
-     - [ ] Add word statistics endpoint
+- [ ] Write handler integration tests
+  - [ ] Test each endpoint
+  - [ ] Test request validation
+  - [ ] Test error handling
 
-2. **Group Handlers**
-   - [ ] Implement group listing handler
-   - [ ] `/api/groups` (paginated group list)
-     - [ ] Implement repository method for listing groups
-     - [ ] Create service layer for group listing
-     - [ ] Develop handler for paginated group retrieval
-   - [ ] Add group search and filtering handlers
-     - [ ] Implement group search endpoint
-     - [ ] Add group statistics endpoint
+### Phase 2: Groups Module Development
+#### 2.1 Group Model
+- [ ] Define Group struct in `pkg/models/group.go`
+  - [ ] Add fields: ID, Group, CreatedAt
+  - [ ] Implement validation methods
+    - [ ] Validate group name length
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
 
-3. **Word Group Handlers**
-   - [ ] Create word group relationship handlers
-     - [ ] Add word to group endpoint
-     - [ ] Remove word from group endpoint
-     - [ ] Get groups for a word endpoint
-     - [ ] Get words in a group endpoint
-     - [ ] Get word-group relationship statistics endpoint
+- [ ] Write Group model tests
+  - [ ] Test struct creation
+  - [ ] Test validation logic
+  - [ ] Test JSON serialization
 
-### Phase 6: Study Activity Domain
-1. **Study Activity Models**
-   - [ ] Define StudyActivity model
-   - [ ] Create StudyActivity validation logic
+#### 2.2 Group Repository
+- [ ] Create Group repository in `pkg/repository/group_repository.go`
+  - [ ] Implement Create method
+  - [ ] Implement GetByID method
+  - [ ] Implement Update method
+  - [ ] Implement Delete method
+  - [ ] Implement List method with pagination
+  - [ ] Implement Search method
+  - [ ] Add error handling for each method
 
-2. **Session Models**
-   - [ ] Define Session model
-   - [ ] Create Session validation logic
+- [ ] Write Group repository tests
+  - [ ] Test CRUD operations
+  - [ ] Test pagination
+  - [ ] Test search functionality
+  - [ ] Test error scenarios
 
-### Phase 7: Study Activity Repositories
-1. **StudyActivity Repository**
-   - [ ] Implement SQLite StudyActivity repository
-   - [ ] Create query interfaces
+#### 2.3 Group Service
+- [ ] Create Group service in `pkg/services/group_service.go`
+  - [ ] Define service interface
+  - [ ] Implement service methods
+    - [ ] Group creation with validation
+    - [ ] Group retrieval methods
+    - [ ] Group search and filtering
+  - [ ] Implement business logic
+  - [ ] Add comprehensive error handling
 
-2. **Session Repository**
-   - [ ] Implement SQLite Session repository
-   - [ ] Create query interfaces
+- [ ] Write Group service tests
+  - [ ] Test business logic
+  - [ ] Test error scenarios
+  - [ ] Test service method interactions
 
-### Phase 8: Study Activity Services
-1. **StudyActivity Services**
-   - [ ] Implement study activity tracking
-   - [ ] Create activity retrieval methods
+#### 2.4 Group Handlers
+- [ ] Create Group handlers in `pkg/handlers/group_handler.go`
+  - [ ] Implement HTTP handlers for:
+    - [ ] GET /api/groups (list groups)
+    - [ ] GET /api/groups/:id (get group details)
+    - [ ] GET /api/groups/:id/words (get words in group)
+    - [ ] GET /api/groups/:id/words/random (get random words in group)
+    - [ ] POST /api/groups (create group)
+    - [ ] PUT /api/groups/:id (update group)
+    - [ ] DELETE /api/groups/:id (delete group)
+  - [ ] Add request validation
+  - [ ] Implement error responses
+  - [ ] Add logging
 
-2. **Session Services**
-   - [ ] Implement session management
-   - [ ] Create session tracking methods
+- [ ] Write handler integration tests
+  - [ ] Test each endpoint
+  - [ ] Test request validation
+  - [ ] Test error handling
 
-### Phase 9: Study Activity Handlers
-1. **StudyActivity Handlers**
-   - [ ] Create endpoints for study activity details
-   - [ ] Implement activity tracking endpoints
+### Phase 3: Word-Groups Module Development
+#### 3.1 Word-Groups Model
+- [ ] Define WordGroup struct in `pkg/models/word_group.go`
+  - [ ] Add fields: ID, GroupID, WordID
+  - [ ] Implement validation methods
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
 
-2. **Session Handlers**
-   - [ ] Create endpoints for session management
-   - [ ] Implement session tracking and reset endpoints
+- [ ] Write Word-Groups model tests
 
-### Phase 10: API Integration and Testing
-1. **API Configuration**
-   - [ ] Configure middleware
-   - [ ] Implement error handling
+#### 3.2 Word-Groups Repository
+- [ ] Create Word-Groups repository
+  - [ ] Implement methods to associate words with groups
+  - [ ] Implement methods to retrieve words by group
+  - [ ] Implement methods to retrieve groups for a word
 
-2. **Comprehensive Testing**
-   - [ ] Write unit tests for models
-   - [ ] Create repository layer tests
-   - [ ] Develop service layer tests
-   - [ ] Implement handler integration tests
+- [ ] Write Word-Groups repository tests
 
-### Phase 11: Documentation and Deployment
-1. **API Documentation**
-   - [ ] Create Swagger/OpenAPI specification
-   - [ ] Generate API documentation
+#### 3.3 Word-Groups Service
+- [ ] Create Word-Groups service
+  - [ ] Implement business logic for word-group associations
+  - [ ] Add validation and error handling
 
-2. **Deployment Preparation**
-   - [ ] Create Docker configuration
-   - [ ] Set up CI/CD pipeline
-   - [ ] Prepare deployment scripts
+- [ ] Write Word-Groups service tests
 
-## Endpoint Implementation Order
+#### 3.4 Word-Groups Handlers
+- [ ] Create Word-Groups handlers
+  - [ ] Implement endpoints for managing word-group relationships
 
-### GET Endpoints Implementation Strategy
-1. **Word Endpoints**
-   - [ ] `/api/words` (paginated word list)
-     - Implement repository method for listing words
-     - Create service layer for word listing
-     - Develop handler for paginated word retrieval
-   - [ ] `/api/words/random` (random word)
-     - Implement random word retrieval logic
-     - Create service method
-     - Develop handler
+- [ ] Write Word-Groups handler tests
 
-2. **Group Endpoints**
-   - [ ] `/api/groups` (paginated group list)
-     - Implement repository method for listing groups
-     - Create service layer for group listing
-     - Develop handler for paginated group retrieval
-   - [ ] `/api/groups/:id/words` (words in a specific group)
-     - Implement repository method to fetch words by group
-     - Create service method for group-specific word retrieval
-     - Develop handler for paginated group words
-   - [ ] `/api/groups/:id/words/random` (random words from a group)
-     - Extend random word service to support group-specific randomization
-     - Modify repository to support group-based random selection
-     - Create handler for group-specific random words
+### Phase 4: Study Activities Module Development
+#### 4.1 Study Activities Model
+- [ ] Define StudyActivity struct in `pkg/models/study_activity.go`
+  - [ ] Add fields: ID, Name, Description, Image
+  - [ ] Implement validation methods
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
 
-3. **Study Activity Endpoints**
-   - [ ] `/api/study-activities` (paginated study activities)
-     - Design StudyActivity model
-     - Implement repository for study activities
-     - Create service layer for activity retrieval
-     - Develop paginated handler
-   - [ ] `/api/sessions` (paginated sessions)
-     - Design Session model
-     - Implement repository for session tracking
-     - Create service layer for session retrieval
-     - Develop paginated handler
-   - [ ] `/api/sessions/:id` (single session details)
-     - Implement repository method for specific session
-     - Create service method for session details
-     - Develop handler for individual session
-   - [ ] `/api/sessions/:id/activity` (session activity details)
-     - Implement repository method for session activities
-     - Create service method for activity retrieval
-     - Develop handler for session-specific activities
+- [ ] Write Study Activities model tests
 
-### POST Endpoints Implementation Strategy
-1. **Session Management**
-   - [ ] `/api/sessions` (create new session)
-     - Design session creation logic
-     - Implement repository method for session creation
-     - Create service method for starting a session
-     - Develop handler for session initialization
-   - [ ] `/api/sessions/:id/activity` (add activity to session)
-     - Design activity tracking model
-     - Implement repository method for activity logging
-     - Create service method for adding activities
-     - Develop handler for activity submission
+#### 4.2 Study Activities Repository
+- [ ] Create Study Activities repository
+  - [ ] Implement CRUD methods
+  - [ ] Implement list and search methods
 
-### PUT Endpoints Implementation Strategy
-1. **Session Updates**
-   - [ ] `/api/sessions` (update session details)
-     - Implement repository method for session updates
-     - Create service method for session modification
-     - Develop handler for session updates
+- [ ] Write Study Activities repository tests
 
-### DELETE Endpoints Implementation Strategy
-1. **System Management**
-   - [ ] `/api/reset` (clear all sessions and related data)
-     - Implement repository method for data reset
-     - Create service method for system-wide data clearing
-     - Develop handler for complete data reset
+#### 4.3 Study Activities Service
+- [ ] Create Study Activities service
+  - [ ] Implement business logic
+  - [ ] Add validation and error handling
 
-## Pagination Implementation Guidelines
-1. **Repository Layer**
-   - Add pagination support to query methods
-   - Implement offset and limit-based pagination
-   - Support sorting and filtering
+- [ ] Write Study Activities service tests
 
-2. **Service Layer**
-   - Create pagination request/response models
-   - Implement pagination logic
-   - Handle edge cases (empty results, invalid page numbers)
+#### 4.4 Study Activities Handlers
+- [ ] Create Study Activities handlers
+  - [ ] Implement GET /api/study-activities endpoint
+  - [ ] Add request validation
+  - [ ] Implement error responses
 
-3. **Handler Layer**
-   - Accept pagination parameters (page, limit, sort)
-   - Return paginated response with metadata
-   - Implement consistent error handling
+- [ ] Write Study Activities handler tests
 
-## Development Notes
-- Implement endpoints incrementally
-- Focus on clean, testable code
-- Ensure consistent error handling
-- Add comprehensive logging
-- Implement thorough input validation
-- Design for extensibility
+### Phase 5: Sessions Module Development
+#### 5.1 Sessions Model
+- [ ] Define Session struct in `pkg/models/session.go`
+  - [ ] Add fields: ID, ActivityID, GroupID, StartTime, EndTime, Score
+  - [ ] Implement validation methods
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
+
+- [ ] Write Sessions model tests
+
+#### 5.2 Sessions Repository
+- [ ] Create Sessions repository
+  - [ ] Implement Create method
+  - [ ] Implement Update method
+  - [ ] Implement List method with pagination
+  - [ ] Implement GetByID method
+  - [ ] Implement methods to start/end session
+
+- [ ] Write Sessions repository tests
+
+#### 5.3 Sessions Service
+- [ ] Create Sessions service
+  - [ ] Implement session creation logic
+  - [ ] Implement session management methods
+  - [ ] Add validation and error handling
+
+- [ ] Write Sessions service tests
+
+#### 5.4 Sessions Handlers
+- [ ] Create Sessions handlers
+  - [ ] Implement GET /api/sessions endpoints
+  - [ ] Implement POST /api/sessions endpoint
+  - [ ] Implement PUT /api/sessions endpoint
+  - [ ] Add request validation
+  - [ ] Implement error responses
+
+- [ ] Write Sessions handler tests
+
+### Phase 6: Session Activities Module Development
+#### 6.1 Session Activities Model
+- [ ] Define SessionActivity struct in `pkg/models/session_activity.go`
+  - [ ] Add fields: ID, SessionID, ActivityID, Question, Answer, Result, Score
+  - [ ] Implement validation methods
+  - [ ] Implement JSON marshaling/unmarshaling
+  - [ ] Add database tags
+
+- [ ] Write Session Activities model tests
+
+#### 6.2 Session Activities Repository
+- [ ] Create Session Activities repository
+  - [ ] Implement Create method
+  - [ ] Implement List method
+  - [ ] Implement methods to track activity progress
+
+- [ ] Write Session Activities repository tests
+
+#### 6.3 Session Activities Service
+- [ ] Create Session Activities service
+  - [ ] Implement logic for adding activities to sessions
+  - [ ] Implement scoring and result tracking
+  - [ ] Add validation and error handling
+
+- [ ] Write Session Activities service tests
+
+#### 6.4 Session Activities Handlers
+- [ ] Create Session Activities handlers
+  - [ ] Implement POST /api/sessions/:id/activity endpoint
+  - [ ] Implement GET /api/sessions/:id/activity endpoint
+  - [ ] Add request validation
+  - [ ] Implement error responses
+
+- [ ] Write Session Activities handler tests
+
+### Phase 7: Integration and Final Testing
+- [ ] Comprehensive integration testing
+- [ ] Performance testing
+- [ ] Security review
+- [ ] Documentation
+- [ ] Final code review and refactoring
+
+## Development Principles
+- Maintain clean, modular code
+- Write comprehensive tests
+- Follow SOLID principles
+- Minimize external dependencies
+- Prioritize code readability
+
+## Micro-Task Guidelines
+- Break down each phase into small, manageable tasks
+- Use Test-Driven Development (TDD)
+- Implement continuous integration
+- Perform code reviews
+- Maintain clear documentation
 
 ## Potential Challenges
 - Efficient random word selection

@@ -39,7 +39,7 @@
     - Use linting tools
     - Use static analysis tools
 
-9. Structure
+9. Project Structure
 
 project-root/
 │
