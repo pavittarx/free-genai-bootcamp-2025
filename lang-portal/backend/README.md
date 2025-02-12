@@ -58,9 +58,9 @@ columns:
    - id: integer
    - session_id: integer
    - activity_id: integer
-   - question: string
+   - challenge: string
    - answer: string
-   - result: string
+   - input: string
    - score: integer
    - created_at: datetime
 
@@ -122,9 +122,9 @@ erDiagram
         integer id PK
         integer session_id FK
         integer activity_id FK
-        string question
+        string challenge
         string answer
-        string result
+        string input
         integer score
         datetime created_at
     }
