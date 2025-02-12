@@ -7,57 +7,62 @@
 ## Project Development Phases
 
 ### Phase 0: Project Setup and Initial Configuration
-- [ ] Create project directory structure
-  - [ ] Create `cmd/` directory for main application
-    - [ ] Create `server/main.go` entry point
-  - [ ] Create `pkg/` directories
-    - [ ] `models/`
-    - [ ] `handlers/`
-    - [ ] `services/`
-    - [ ] `repository/`
-  - [ ] Create `internal/` directories
-    - [ ] `config/`
-    - [ ] `middleware/`
-  - [ ] Create `db/` directories
-    - [ ] `migrations/`
-    - [ ] `seeds/`
-  - [ ] Create `scripts/` directory
-  - [ ] Create `tests/` directory
+- [x] Create project directory structure
+  - [x] Create `cmd/` directory for main application
+    - [x] Create `server/main.go` entry point
+  - [x] Create `pkg/` directories
+    - [x] `models/`
+    - [x] `handlers/`
+    - [x] `services/`
+    - [x] `repository/`
+  - [x] Create `internal/` directories
+    - [x] `config/`
+    - [x] `middleware/`
+  - [x] Create `db/` directories
+    - [x] `migrations/`
+    - [x] `seeds/`
+  - [x] Create `scripts/` directory
+  - [x] Create `tests/` directory
 
-- [ ] Initialize Go Module and Dependencies
-  - [ ] Run `go mod init`
-  - [ ] Add core dependencies
-    - [ ] Echo framework
-    - [ ] SQLite driver
-    - [ ] Migration tool
-    - [ ] Logging library
-  - [ ] Configure `go.mod` and `go.sum`
-  - [ ] Run `go mod tidy`
+- [x] Initialize Go Module and Dependencies
+  - [x] Run `go mod init`
+  - [x] Add core dependencies
+    - [x] Echo framework
+    - [x] SQLite driver
+    - [x] Migration tool
+    - [x] Logging library
+  - [x] Configure `go.mod` and `go.sum`
+  - [x] Run `go mod tidy`
 
-- [ ] Database Configuration
-  - [ ] Design initial database schema
-  - [ ] Create migration scripts for:
-    - [ ] Words table
-    - [ ] Groups table
-    - [ ] Word-Groups table
-    - [ ] Study Activities table
-    - [ ] Sessions table
-    - [ ] Session Activities table
-  - [ ] Prepare seed data CSV files
-  - [ ] Create database initialization script
+- [x] Database Configuration
+  - [x] Design initial database schema
+  - [x] Create migration scripts for:
+    - [x] Words table
+    - [x] Groups table
+    - [x] Word-Groups table
+    - [x] Study Activities table
+    - [x] Sessions table
+    - [x] Session Activities table
+  - [x] Prepare seed data CSV files
+  - [x] Create database initialization script
 
-- [ ] Server Configuration
-  - [ ] Create main application entry point
-  - [ ] Configure Echo framework
-  - [ ] Set up server to run on port 3000
-  - [ ] Implement graceful shutdown
-  - [ ] Add basic logging middleware
-  - [ ] Set up error handling middleware
+- [x] Server Configuration
+  - [x] Create main application entry point
+  - [x] Configure Echo framework
+  - [x] Set up server to run on port 3000
+  - [x] Implement graceful shutdown
+  - [x] Add basic logging middleware
+  - [x] Set up error handling middleware
+  - [x] Create a /api endpoint to show the server is running
+  - [x] The root /api endpoint should return a "healthy" status
 
-- [ ] Development Tooling
-  - [ ] Set up linting (golangci-lint)
-  - [ ] Configure CI/CD pipeline
-  - [ ] Add Makefile for common tasks
+- [x] Development Tooling
+  - [x] Set up linting (golangci-lint)
+  - [x] Configure CI/CD pipeline
+  - [x] Add Makefile for common tasks
+
+- [x] Implement graceful shutdown
+- [x] Start and run the Server on port 3000
 
 ### Phase 1: Words Module Development
 #### 1.1 Word Model

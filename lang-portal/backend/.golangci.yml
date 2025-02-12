@@ -1,0 +1,39 @@
+run:
+  # timeout for analysis, e.g. 30s, 5m
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - golint
+    - gocritic
+    - misspell
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.8
+  gofmt:
+    simplify: true
+
+issues:
+  exclude-rules:
+    # Exclude some linters for test files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+
+# Additional configuration for specific linters
+# Add more as needed based on project requirements
