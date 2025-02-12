@@ -13,6 +13,15 @@ The portal in its current form, will do the following:
 - The frontend is meant to be used by single user.
 - No authentication/authorisation is required.
 
+## General Instructions
+- Words are not editable.
+- Groups are not editable.
+- Study activities are not editable.
+- Sessions can be created.
+- Sessions cannot be edited or deleted.
+- Session Activity can be created.
+- Sessions Activity cannot be edited or deleted. 
+
 ## Pages
 1. Dashboard Page  
 - The dashboard page will act as the landing page for the user. 
