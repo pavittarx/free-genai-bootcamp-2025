@@ -4,12 +4,19 @@ The portal in its current form, will do the following:
 - Act as a launchpad for different study activities.
 - Store Language words and sentences, that would aid in learning activities. 
 - Act as a record keeping app for tracking progress and performance.
+- The project only uses a single language, Hindi.
+- The project does not have any complex functionlity, so the scope must be kept in check.
 
 ## Technical Requirements
-- Backend will be wriiten using Go, with standard libraries.
+- Backend will be wriiten using Go, with Echo framwork.
 - The database used will be SQLite3. 
 - The API request and response will be in JSON format.
 - The API will be stateless, and will not store any persistent data.
+
+- The data will be stored in a SQLite3 database.
+- The database will be hosted on the same machine as the API.
+- If the database does not exist, it will be created using schema.sql.
+- The data will be seeded if the data is not present.
 
 ## Database Design
 
@@ -132,25 +139,27 @@ erDiagram
 
 
 ## API Design
+- The endpoints follow JSON format.
+- The API is stateless, and does not store any persistent data.
+- The API is not intended to be used by end users.
+- The API does not have any authentication or authorization.
+- The APIs should be paginated.
+- The application is not multi-user, and is not intended to be scaled.
 
-[GET]
-- /api/words
-- /api/words/:id
+API Endpoints to be implemented:
+- [GET] /api/words - get all words
+- [GET] /api/words/random - get a random word
+- [GET] /api/groups - get all groups
+- [GET] /api/groups/:id/words - get all words from a group
+- [GET] /api/groups/:id/words/random - get random words from a group
+- [GET] /api/study-activities - get all study activities
+- [GET] /api/sessions - get all sessions details
+- [GET] /api/sessions/:id - get a single session details
+- [GET] /api/sessions/:id/activity - get session activity details
 
-- /api/groups
-- /api/groups/:id
+- [POST] /api/sessions - start or create a new session
+- [POST] /api/sessions/:id/activity - add activity to a session
 
-- /api/word-groups
-- /api/word-groups/:id
+- [PUT] /api/sessions - update session details
 
-- /api/study-activities
-- /api/sessions
-- /api/session-activity
-
-[POST]
-- /api/sessions
-- /api/session-activity
-
-[PUT]
-- /api/sessions
-- /api/session-activity
+- [DELETE] /api/reset - clear all sessions and related data
