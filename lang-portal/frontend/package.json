@@ -11,22 +11,30 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest tests",
+    "test:run": "vitest run tests",
+    "test:coverage": "vitest run --coverage tests"
   },
   "dependencies": {
+    "@tanstack/vue-query": "^5.66.0",
     "nuxt": "^3.15.4",
     "vue": "latest",
     "vue-router": "latest"
   },
   "devDependencies": {
+    "@nuxt/test-utils": "^3.15.4",
     "@nuxtjs/tailwindcss": "^6.13.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/compiler-sfc": "^3.5.13",
+    "@vue/test-utils": "^2.4.6",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.23.0",
+    "happy-dom": "^17.1.0",
     "prettier": "^3.5.0",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^3.0.5"
   }
 }
