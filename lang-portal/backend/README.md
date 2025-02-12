@@ -137,30 +137,27 @@ erDiagram
 
 
 ## API Design
+- The endpoints follow JSON format.
+- The API is stateless, and does not store any persistent data.
+- The API is not intended to be used by end users.
+- The API does not have any authentication or authorization.
+- The APIs should be paginated.
+- The application is not multi-user, and is not intended to be scaled.
 
-[GET]
-- /api/words
-- /api/words/:id
+API Endpoints to be implemented:
+- [GET] /api/words - get all words
+- [GET] /api/words/random - get a random word
+- [GET] /api/groups - get all groups
+- [GET] /api/groups/:id/words - get all words from a group
+- [GET] /api/groups/:id/words/random - get random words from a group
+- [GET] /api/study-activities - get all study activities
+- [GET] /api/sessions - get all sessions details
+- [GET] /api/sessions/:id - get a single session details
+- [GET] /api/sessions/:id/activity - get session activity details
 
-- /api/groups
-- /api/groups/:id
+- [POST] /api/sessions - start or create a new session
+- [POST] /api/sessions/:id/activity - add activity to a session
 
-- /api/word-groups
-- /api/word-groups/:id
+- [PUT] /api/sessions - update session details
 
-- /api/study-activities
-- /api/sessions
-- /api/sessions/:id
-
-- /api/sessions
-- /api/sessions/:id/activity
-
-[POST]
-- /api/sessions
-- /api/sessions/:id/activity
-
-[PUT]
-- /api/sessions
-
-[DELETE]
-- /api/reset
+- [DELETE] /api/reset - clear all sessions and related data
