@@ -66,74 +66,76 @@
 
 ### Phase 1: Words Module Development
 #### 1.1 Word Model
-- [ ] Define Word struct in `pkg/models/word.go`
-  - [ ] Add fields: ID, Hindi, Scrambled, Hinglish, English
-  - [ ] Implement validation methods
-    - [ ] Validate word text length
-    - [ ] Validate language constraints
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
-  - [ ] Implement custom validation logic
+- [x] Define Word struct in `pkg/models/word.go`
+  - [x] Add fields: ID, Hindi, Scrambled, Hinglish, English
+  - [x] Implement validation methods
+    - [x] Validate word text length
+    - [x] Validate language constraints
+  - [x] Implement JSON marshaling/unmarshaling
+  - [x] Add database tags
+  - [x] Implement custom validation logic
 
-- [ ] Write Word model tests
-  - [ ] Test struct creation
-  - [ ] Test validation logic
-  - [ ] Test JSON serialization
+- [x] Write Word model tests
+  - [x] Test struct creation
+  - [x] Test validation logic
+  - [x] Test JSON serialization
 
 #### 1.2 Word Repository
-- [ ] Create Word repository in `pkg/repository/word_repository.go`
-  - [ ] Implement Create method
-  - [ ] Implement GetByID method
-  - [ ] Implement Update method
-  - [ ] Implement Delete method
-  - [ ] Implement List method with pagination
-  - [ ] Implement Search method
-  - [ ] Implement GetRandom method
-  - [ ] Implement GetByLanguage method
-  - [ ] Add error handling for each method
+- [x] Create Word repository in `pkg/repository/word_repository.go`
+  - [x] Implement Create method
+  - [x] Implement GetByID method
+  - [x] Implement Update method
+  - [x] Implement Delete method
+  - [x] Implement List method with pagination
+  - [x] Implement Search method
+  - [x] Implement GetRandom method
+  - [x] Implement GetByLanguage method
+  - [x] Add error handling for each method
 
-- [ ] Write Word repository tests
-  - [ ] Test CRUD operations
-  - [ ] Test pagination
-  - [ ] Test search functionality
-  - [ ] Test random word retrieval
-  - [ ] Test language-specific retrieval
-  - [ ] Test error scenarios
+- [x] Write Word repository tests
+  - [x] Test CRUD operations
+  - [x] Test pagination
+  - [x] Test search functionality
+  - [x] Test random word retrieval
+  - [x] Test language-specific retrieval
+  - [x] Test error scenarios
 
 #### 1.3 Word Service
-- [ ] Create Word service in `pkg/services/word_service.go`
-  - [ ] Define service interface
-  - [ ] Implement service methods
-    - [ ] Word creation with validation
-    - [ ] Word retrieval methods
-    - [ ] Word search and filtering
-    - [ ] Random word selection
-    - [ ] Language-specific word retrieval
-  - [ ] Implement business logic
-  - [ ] Add comprehensive error handling
+- [x] Create Word service in `pkg/services/word_service.go`
+  - [x] Define service interface
+  - [x] Implement service methods
+    - [x] Word creation with validation
+    - [x] Word retrieval methods
+    - [x] Word search and filtering
+    - [x] Random word selection
+    - [x] Language-specific word retrieval
+  - [x] Implement business logic
+  - [x] Add comprehensive error handling
 
-- [ ] Write Word service tests
-  - [ ] Test business logic
-  - [ ] Test error scenarios
-  - [ ] Test service method interactions
+- [x] Write Word service tests
+  - [x] Test business logic
+  - [x] Test error scenarios
+  - [x] Test service method interactions
 
 #### 1.4 Word Handlers
-- [ ] Create Word handlers in `pkg/handlers/word_handler.go`
-  - [ ] Implement HTTP handlers for:
-    - [ ] GET /api/words (list words)
-    - [ ] GET /api/words/:id (get word details)
-    - [ ] GET /api/words/random (get random word)
-    - [ ] POST /api/words (create word)
-    - [ ] PUT /api/words/:id (update word)
-    - [ ] DELETE /api/words/:id (delete word)
-  - [ ] Add request validation
-  - [ ] Implement error responses
-  - [ ] Add logging
+- [x] Create Word handlers in `pkg/handlers/word_handler.go`
+  - [x] Implement HTTP handlers for:
+    - [x] GET /api/words (list words)
+    - [x] GET /api/words/:id (get word details)
+    - [x] GET /api/words/random (get random word)
+    - [x] POST /api/words (create word)
+    - [x] PUT /api/words/:id (update word)
+    - [x] DELETE /api/words/:id (delete word)
+  - [x] Add request validation
+  - [x] Implement error responses
+  - [x] Add logging
 
-- [ ] Write handler integration tests
-  - [ ] Test each endpoint
-  - [ ] Test request validation
-  - [ ] Test error handling
+- [x] Write handler integration tests
+  - [x] Test each endpoint
+  - [x] Test request validation
+  - [x] Test error handling
+
+- [x] Start the server and run it on port 3000
 
 ### Phase 2: Groups Module Development
 #### 2.1 Group Model

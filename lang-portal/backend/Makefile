@@ -18,7 +18,7 @@ INTERNAL_DIR=./internal
 # Linting configuration
 LINT_CONFIG=.golangci.yml
 
-.PHONY: all build test lint clean init run
+.PHONY: all build test lint clean init run dev run-fts5 build-fts5
 
 # Default target
 all: lint test build
@@ -49,10 +49,19 @@ db-init:
 run: build
 	$(BINARY_PATH)
 
+# Run with hot reloading
+dev:
+	$(HOME)/go/bin/air
+
+# Run the application with FTS5 support
+run-fts5:
+	go run --tags "fts5" ./cmd/server/main.go
+
+# Build the application with FTS5 support
+build-fts5:
+	go build --tags "fts5" -o bin/server ./cmd/server/main.go
+
 # Clean build artifacts
 clean:
 	rm -rf bin
 	$(GOCMD) clean -modcache
-
-# Development workflow
-dev: lint test run

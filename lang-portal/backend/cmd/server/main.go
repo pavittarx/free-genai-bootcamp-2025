@@ -12,13 +12,27 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
+
+	"github.com/pavittarx/lang-portal/backend/internal/config"
+	"github.com/pavittarx/lang-portal/backend/pkg/handlers"
+	"github.com/pavittarx/lang-portal/backend/pkg/repository"
+	"github.com/pavittarx/lang-portal/backend/pkg/services"
 )
 
 func main() {
 	// Initialize logger
 	logger, _ := zap.NewProduction()
-	defer logger.Sync()
+	if syncErr := logger.Sync(); syncErr != nil {
+		fmt.Fprintf(os.Stderr, "Failed to sync logger: %v\n", syncErr)
+	}
 	sugar := logger.Sugar()
+
+	// Initialize database
+	db, err := config.InitDatabase()
+	if err != nil {
+		sugar.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer db.Close()
 
 	// Create Echo instance
 	e := echo.New()
@@ -31,10 +45,25 @@ func main() {
 	// API Health Check Endpoint
 	e.GET("/api", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
-			"status": "healthy",
+			"status":  "healthy",
 			"message": "Language Portal Backend is running successfully!",
 		})
 	})
+
+	// Initialize Word Repository, Service, and Handler
+	wordRepo := repository.NewSQLiteWordRepository(db)
+	wordService := services.NewWordService(wordRepo)
+	wordHandler := handlers.NewWordHandler(wordService, wordRepo)
+
+	// Word Routes
+	words := e.Group("/api/words")
+	words.POST("", wordHandler.CreateWord)
+	words.GET("", wordHandler.ListWords)
+	words.GET("/search", wordHandler.SearchWords)
+	words.GET("/random", wordHandler.GetRandomWord)
+	words.GET("/:id", wordHandler.GetWordByID)
+	words.PUT("/:id", wordHandler.UpdateWord)
+	words.DELETE("/:id", wordHandler.DeleteWord)
 
 	// Routes (to be added later)
 	e.GET("/health", func(c echo.Context) error {

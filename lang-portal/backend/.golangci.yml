@@ -13,15 +13,12 @@ linters:
     - unused
     - gofmt
     - goimports
-    - golint
     - gocritic
     - misspell
 
 linters-settings:
   govet:
     check-shadowing: true
-  golint:
-    min-confidence: 0.8
   gofmt:
     simplify: true
 
