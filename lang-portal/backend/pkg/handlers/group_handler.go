@@ -21,33 +21,52 @@ func NewGroupHandler(groupService *services.GroupService) *GroupHandler {
 	}
 }
 
-// ListGroups handles the GET request to retrieve all groups
+// ListGroups handles the GET request to retrieve a paginated list of groups
 func (h *GroupHandler) ListGroups(c echo.Context) error {
-	ctx := c.Request().Context()
-
 	// Parse pagination parameters
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
-	sort := c.QueryParam("sort")
-	order := c.QueryParam("order")
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
 
-	// Create pagination request
-	req := models.PaginationRequest{
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil || limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	// Parse optional group name filter
+	groupName := c.QueryParam("name")
+	var filter *models.GroupFilter
+	if groupName != "" {
+		filter = &models.GroupFilter{
+			Name: groupName,
+		}
+	}
+
+	// Prepare pagination request
+	paginationReq := models.PaginationRequest{
 		Page:   page,
 		Limit:  limit,
-		Sort:   sort,
-		Order:  order,
+		Filter: filter,
 	}
 
-	// Get paginated groups
-	result, err := h.groupService.ListGroups(ctx, req)
+	// Retrieve paginated groups
+	groups, total, err := h.groupService.ListGroups(c.Request().Context(), paginationReq)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to retrieve groups: " + err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve groups")
 	}
 
-	return c.JSON(http.StatusOK, result)
+	// Prepare pagination response
+	response := models.PaginationResponse{
+		Data:       groups,
+		Total:      total,
+		Page:       page,
+		Limit:      limit,
+		TotalPages: int((total + int64(limit) - 1) / int64(limit)),
+	}
+
+	// Return the response
+	return c.JSON(http.StatusOK, response)
 }
 
 // GetGroupDetails handles the GET request to retrieve details of a specific group

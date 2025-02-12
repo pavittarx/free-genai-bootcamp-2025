@@ -48,17 +48,17 @@
 ### Phase 3: Repository Layer
 1. **Word Repositories**
    - [x] Implement SQLite Word repository
-   - [ ] Create Word query interfaces
-   - [ ] Add complex query methods
+   - [x] Create Word query interfaces
+   - [x] Add complex query methods
 
 2. **Group Repositories**
    - [x] Implement SQLite Group repository
-   - [ ] Create Group query interfaces
-   - [ ] Add group filtering methods
+   - [x] Create Group query interfaces
+   - [x] Add group filtering methods
 
 3. **Word Group Repositories**
    - [x] Implement SQLite WordGroup repository
-   - [ ] Create WordGroup query methods
+   - [x] Create WordGroup query methods
 
 ### Phase 4: Service Layer
 1. **Word Services**
@@ -81,6 +81,10 @@
 
 2. **Group Handlers**
    - [x] Implement group listing handler
+   - [x] `/api/groups` (paginated group list)
+     - [x] Implement repository method for listing groups
+     - [x] Create service layer for group listing
+     - [x] Develop handler for paginated group retrieval
    - [ ] Add group search and filtering handlers
 
 3. **Word Group Handlers**
@@ -157,10 +161,10 @@
      - [x] Develop handler
 
 2. **Group Endpoints**
-   - [ ] `/api/groups` (paginated group list)
-     - Implement repository method for listing groups
-     - Create service layer for group listing
-     - Develop handler for paginated group retrieval
+   - [x] `/api/groups` (paginated group list)
+     - [x] Implement repository method for listing groups
+     - [x] Create service layer for group listing
+     - [x] Develop handler for paginated group retrieval
    - [ ] `/api/groups/:id/words` (words in a specific group)
      - Implement repository method to fetch words by group
      - Create service method for group-specific word retrieval

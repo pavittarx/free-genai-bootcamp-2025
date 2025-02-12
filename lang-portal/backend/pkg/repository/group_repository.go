@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"strings"
 
 	"github.com/pavittarx/lang-portal/pkg/models"
 )
@@ -109,44 +110,68 @@ func (r *SQLiteGroupRepository) Create(ctx context.Context, group *models.Group)
 	return id, nil
 }
 
-// ListPaginated retrieves paginated groups
+// ListPaginated retrieves a paginated list of groups
 func (r *SQLiteGroupRepository) ListPaginated(ctx context.Context, req models.PaginationRequest) ([]models.Group, int64, error) {
-	// Base query to count total groups
+	// Prepare base query
+	query := `SELECT id, name, description FROM groups`
 	countQuery := `SELECT COUNT(*) FROM groups`
+
+	// Prepare optional filters
+	var whereClauses []string
+	var args []interface{}
+
+	// Add name filter if provided
+	if req.Filter != nil {
+		if nameFilter, ok := req.Filter.(models.GroupFilter); ok && nameFilter.Name != "" {
+			whereClauses = append(whereClauses, "name LIKE ?")
+			args = append(args, "%"+nameFilter.Name+"%")
+		}
+	}
+
+	// Construct where clause if filters exist
+	whereClause := ""
+	if len(whereClauses) > 0 {
+		whereClause = " WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	// Count total records
 	var total int64
-	err := r.DB.QueryRowContext(ctx, countQuery).Scan(&total)
+	countQuery += whereClause
+	err := r.DB.QueryRowContext(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		log.Printf("Error counting groups: %v", err)
 		return nil, 0, err
 	}
-	
-	// Paginated query with sorting
-	query := `SELECT id, name, description FROM groups 
-			  ORDER BY ` + req.Sort + ` ` + req.Order + ` 
-			  LIMIT ? OFFSET ?`
-	
-	rows, err := r.DB.QueryContext(ctx, query, req.Limit, req.Offset)
+
+	// Add pagination to query
+	query += whereClause
+	query += ` LIMIT ? OFFSET ?`
+	args = append(args, req.Limit, (req.Page-1)*req.Limit)
+
+	// Execute query
+	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		log.Printf("Error listing paginated groups: %v", err)
+		log.Printf("Error listing groups: %v", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
-	
+
+	// Scan results
 	var groups []models.Group
 	for rows.Next() {
-		var group models.Group
-		err := rows.Scan(&group.ID, &group.Name, &group.Description)
-		if err != nil {
-			log.Printf("Error scanning paginated group: %v", err)
+		var g models.Group
+		if err := rows.Scan(&g.ID, &g.Name, &g.Description); err != nil {
+			log.Printf("Error scanning group: %v", err)
 			return nil, 0, err
 		}
-		groups = append(groups, group)
+		groups = append(groups, g)
 	}
-	
+
+	// Check for any errors during iteration
 	if err = rows.Err(); err != nil {
-		log.Printf("Error in paginated group rows: %v", err)
+		log.Printf("Error in group rows: %v", err)
 		return nil, 0, err
 	}
-	
+
 	return groups, total, nil
 }
