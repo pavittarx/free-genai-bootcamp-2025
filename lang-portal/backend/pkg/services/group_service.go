@@ -25,7 +25,7 @@ func (s *GroupService) CreateGroup(ctx context.Context, group *models.Group) err
 		return fmt.Errorf("invalid group: %w", err)
 	}
 
-	// Sanitize the group name
+	// Sanitize the group name and description
 	group.Sanitize()
 
 	// Create the group in the repository
@@ -55,7 +55,7 @@ func (s *GroupService) UpdateGroup(ctx context.Context, group *models.Group) err
 		return fmt.Errorf("invalid group ID: %d", group.ID)
 	}
 
-	// Sanitize the group name
+	// Sanitize the group name and description
 	group.Sanitize()
 
 	// Update the group in the repository

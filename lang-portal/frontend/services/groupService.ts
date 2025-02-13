@@ -65,14 +65,20 @@ export function useGroupService() {
       
       // Debug logging
       console.log('Raw groups response:', data)
-      console.log('Groups:', data.groups)
-      console.log('Total Count:', data.totalCount)
 
-      groups.value = data.groups || []
+      // Correctly parse the nested group object
+      const parsedGroups = data.groups.map((item: any) => ({
+        id: item.group.id,
+        name: item.group.name,
+        description: item.group.description,
+        created_at: item.group.created_at
+      }))
+
+      groups.value = parsedGroups
       
       return {
         groups: groups.value,
-        totalCount: data.totalCount || 0
+        totalCount: data.total || 0
       }
     } catch (err) {
       const errorMessage = err instanceof Error 
@@ -100,22 +106,31 @@ export function useGroupService() {
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Failed to fetch group with id ${id}: ${response.status} - ${errorText}`)
+        throw new Error(`Failed to fetch group: ${response.status} - ${errorText}`)
       }
 
-      const groupData = await response.json()
-      group.value = groupData
-      return groupData
+      const data = await response.json()
+      
+      // Correctly parse the nested group object
+      group.value = {
+        id: data.group.id,
+        name: data.group.name,
+        description: data.group.description,
+        created_at: data.group.created_at
+      }
+
+      return group.value
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
-        : `An unknown error occurred while fetching group with id ${id}`
+        : 'An unknown error occurred while fetching group'
       
       error.value = errorMessage
       group.value = null
+      
       throw err
     } finally {
       loading.value = false

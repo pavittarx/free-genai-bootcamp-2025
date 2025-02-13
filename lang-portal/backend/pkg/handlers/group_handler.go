@@ -36,7 +36,10 @@ func (h *GroupHandler) CreateGroup(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, group)
+	return c.JSON(http.StatusCreated, map[string]interface{}{
+		"group": group,
+		"description": group.Description,
+	})
 }
 
 // GetGroupByID retrieves a group by its ID
@@ -52,7 +55,10 @@ func (h *GroupHandler) GetGroupByID(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, group)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"group": group,
+		"description": group.Description,
+	})
 }
 
 // UpdateGroup updates an existing group
@@ -76,7 +82,10 @@ func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, group)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"group": group,
+		"description": group.Description,
+	})
 }
 
 // DeleteGroup removes a group by its ID
@@ -105,8 +114,16 @@ func (h *GroupHandler) ListGroups(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
+	var groupResponses []map[string]interface{}
+	for _, group := range groups {
+		groupResponses = append(groupResponses, map[string]interface{}{
+			"group": group,
+			"description": group.Description,
+		})
+	}
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"groups": groups,
+		"groups": groupResponses,
 		"total":  total,
 	})
 }

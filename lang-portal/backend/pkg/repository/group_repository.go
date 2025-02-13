@@ -25,12 +25,12 @@ func (r *SQLiteGroupRepository) Create(ctx context.Context, group *models.Group)
 		return err
 	}
 
-	// Sanitize the group name
+	// Sanitize the group name and description
 	group.Sanitize()
 
 	// Prepare the SQL statement
-	query := `INSERT INTO groups (name, created_at) VALUES (?, datetime('now'))`
-	result, err := r.db.ExecContext(ctx, query, group.Name)
+	query := `INSERT INTO groups (name, description, created_at) VALUES (?, ?, datetime('now'))`
+	result, err := r.db.ExecContext(ctx, query, group.Name, group.Description)
 	if err != nil {
 		return fmt.Errorf("failed to create group: %w", err)
 	}
@@ -47,10 +47,10 @@ func (r *SQLiteGroupRepository) Create(ctx context.Context, group *models.Group)
 
 // GetByID retrieves a group by its ID
 func (r *SQLiteGroupRepository) GetByID(ctx context.Context, id int64) (*models.Group, error) {
-	query := `SELECT id, name, created_at FROM groups WHERE id = ?`
+	query := `SELECT id, name, description, created_at FROM groups WHERE id = ?`
 	group := &models.Group{}
 
-	err := r.db.QueryRowContext(ctx, query, id).Scan(&group.ID, &group.Name, &group.CreatedAt)
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&group.ID, &group.Name, &group.Description, &group.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("group with ID %d not found", id)
@@ -68,12 +68,12 @@ func (r *SQLiteGroupRepository) Update(ctx context.Context, group *models.Group)
 		return err
 	}
 
-	// Sanitize the group name
+	// Sanitize the group name and description
 	group.Sanitize()
 
 	// Prepare the SQL statement
-	query := `UPDATE groups SET name = ? WHERE id = ?`
-	result, err := r.db.ExecContext(ctx, query, group.Name, group.ID)
+	query := `UPDATE groups SET name = ?, description = ? WHERE id = ?`
+	result, err := r.db.ExecContext(ctx, query, group.Name, group.Description, group.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update group: %w", err)
 	}
@@ -119,14 +119,14 @@ func (r *SQLiteGroupRepository) List(ctx context.Context, page, pageSize int, se
 
 	// Base query for counting total groups
 	countQuery := `SELECT COUNT(*) FROM groups WHERE 1=1`
-	listQuery := `SELECT id, name, created_at FROM groups WHERE 1=1`
+	listQuery := `SELECT id, name, description, created_at FROM groups WHERE 1=1`
 
 	// Add search condition if provided
 	args := []interface{}{}
 	if search != "" {
-		countQuery += ` AND name LIKE ?`
-		listQuery += ` AND name LIKE ?`
-		args = append(args, "%"+search+"%")
+		countQuery += ` AND (name LIKE ? OR description LIKE ?)`
+		listQuery += ` AND (name LIKE ? OR description LIKE ?)`
+		args = append(args, "%"+search+"%", "%"+search+"%")
 	}
 
 	// Count total groups
@@ -151,7 +151,7 @@ func (r *SQLiteGroupRepository) List(ctx context.Context, page, pageSize int, se
 	groups := []models.Group{}
 	for rows.Next() {
 		var group models.Group
-		if err := rows.Scan(&group.ID, &group.Name, &group.CreatedAt); err != nil {
+		if err := rows.Scan(&group.ID, &group.Name, &group.Description, &group.CreatedAt); err != nil {
 			return nil, 0, fmt.Errorf("failed to scan group: %w", err)
 		}
 		groups = append(groups, group)
