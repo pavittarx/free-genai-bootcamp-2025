@@ -10,6 +10,14 @@
       </div>
     </template>
 
+    <StudyActivityPopup ref="activityPopup">
+      <component 
+        v-if="selectedActivity"
+        :is="getActivityComponent(selectedActivity.name)"
+        :activity-id="selectedActivity.id"
+      />
+    </StudyActivityPopup>
+
     <div 
       v-if="studyActivities && studyActivities.length" 
       class="w-full flex justify-center items-center gap-8 p-8"
@@ -18,7 +26,7 @@
         v-for="activity in studyActivities" 
         :key="activity.id"
         @click="launchActivity(activity)"
-        class="pokemon-card group mx-4"
+        class="pokemon-card group mx-4 cursor-pointer"
       >
         <div class="pokemon-card-inner">
           <div class="pokemon-card-front">
@@ -43,12 +51,6 @@
     </div>
 
     <div v-else-if="isLoading" class="text-center py-16 bg-white rounded-xl shadow-md">
-      <div class="mb-4 text-6xl animate-pulse">🏁</div>
-      <h2 class="text-xl font-semibold text-gray-700 mb-2">Loading Activities</h2>
-      <p class="text-gray-500">Fetching study activities...</p>
-    </div>
-
-    <div v-else class="text-center py-16 bg-white rounded-xl shadow-md">
       <div class="mb-4 text-6xl">🏁</div>
       <h2 class="text-xl font-semibold text-gray-700 mb-2">No Study Activities</h2>
       <p class="text-gray-500">Study activities will be added soon!</p>
@@ -57,10 +59,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { useRouter } from 'vue-router'
 import PageLayout from '~/components/common/PageLayout.vue'
+import StudyActivityPopup from '~/components/StudyActivityPopup.vue'
+import UnscrambleWordsActivity from '~/components/UnscrambleWordsActivity.vue'
 
 interface StudyActivity {
   id: number
@@ -71,7 +74,8 @@ interface StudyActivity {
   created_at: string
 }
 
-const router = useRouter()
+const activityPopup = ref(null)
+const selectedActivity = ref<StudyActivity | null>(null)
 
 const ACTIVITY_IMAGES: Record<string, string> = {
   'Unscramble Words': '/game-1.jpg',
@@ -116,8 +120,19 @@ const getActivityImage = (activity: StudyActivity): string => {
   return ACTIVITY_IMAGES[activity.name] || '/game-default.jpg'
 }
 
-const launchActivity = (activity: StudyActivity): void => {
-  router.push(`/study-activities/${activity.id}`)
+const getActivityComponent = (activityName: string) => {
+  const componentMap = {
+    'Unscramble Words': UnscrambleWordsActivity,
+    // Add other activity components as they are created
+  }
+  return componentMap[activityName] || null
+}
+
+const launchActivity = (activity: StudyActivity) => {
+  selectedActivity.value = activity
+  if (activityPopup.value) {
+    activityPopup.value.open()
+  }
 }
 
 const formatDate = (dateString: string): string => {
