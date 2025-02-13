@@ -8,7 +8,11 @@ import (
 )
 
 // RegisterRoutes sets up all routes for the application
-func RegisterRoutes(e *echo.Echo, wordHandler *handlers.WordHandler, groupHandler *handlers.GroupHandler, studyActivityHandler *handlers.StudyActivityHandler) {
+func RegisterRoutes(e *echo.Echo, 
+	wordHandler *handlers.WordHandler, 
+	groupHandler *handlers.GroupHandler, 
+	studyActivityHandler *handlers.StudyActivityHandler,
+	sessionHandler *handlers.SessionHandler) {
 	// Health check endpoints
 	e.GET("/api", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
@@ -38,4 +42,11 @@ func RegisterRoutes(e *echo.Echo, wordHandler *handlers.WordHandler, groupHandle
 
 	// Register study activities routes
 	e.GET("/api/study-activities", studyActivityHandler.GetStudyActivities)
+
+	// Session routes
+	e.GET("/api/sessions", sessionHandler.GetSessions)
+	e.GET("/api/sessions/:id", sessionHandler.GetSessionByID)
+	e.POST("/api/sessions", sessionHandler.CreateSession)
+	e.PUT("/api/sessions/:id", sessionHandler.UpdateSession)
+	e.DELETE("/api/sessions/:id", sessionHandler.DeleteSession)
 }

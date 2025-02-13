@@ -202,81 +202,95 @@
 
 ### Phase 4: Study Activities Module Development
 #### 4.1 Study Activities Model
-- [ ] Define StudyActivity struct in `pkg/models/study_activity.go`
-  - [ ] Add fields: ID, Name, Description, Image, Score
-  - [ ] Implement validation methods
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
+- [x] Define StudyActivity struct in `pkg/models/study_activity.go`
+  - [x] Add fields: ID, Name, Description, Image, Score
+  - [x] Implement validation methods
+  - [x] Implement JSON marshaling/unmarshaling
+  - [x] Add database tags
 
-- [ ] Write Study Activities model tests
-  - [ ] Test struct creation
-  - [ ] Test validation logic
-  - [ ] Test JSON serialization
+- [x] Write Study Activities model tests
+  - [x] Test struct creation
+  - [x] Test validation logic
+  - [x] Test JSON serialization
 
 #### 4.2 Study Activities Repository
-- [ ] Create Study Activities repository
-  - [ ] Implement CRUD methods
-  - [ ] Implement list and search methods
+- [x] Create Study Activities repository
+  - [x] Implement GetAll method
+  - [x] Add error handling for method
 
-- [ ] Write Study Activities repository tests
-  - [ ] Test CRUD operations
-  - [ ] Test list and search functionality
+- [x] Write Study Activities repository tests
+  - [x] Test retrieval of study activities
+  - [x] Test error scenarios
 
 #### 4.3 Study Activities Service
-- [ ] Create Study Activities service
-  - [ ] Implement business logic
-  - [ ] Add validation and error handling
+- [x] Create Study Activities service
+  - [x] Implement GetStudyActivities method
+  - [x] Add validation and error handling
 
-- [ ] Write Study Activities service tests
-  - [ ] Test business logic
-  - [ ] Test error scenarios
-  - [ ] Test service method interactions
+- [x] Write Study Activities service tests
+  - [x] Test business logic
+  - [x] Test error scenarios
+  - [x] Test service method interactions
 
 #### 4.4 Study Activities Handlers
 - [x] Create Study Activities handlers
   - [x] Implement GET /api/study-activities endpoint
-  - [ ] Add request validation
-  - [ ] Implement error responses
-
-- [ ] Write Study Activities handler tests
+  - [x] Add request validation
+  - [x] Implement error responses
 
 ### Phase 5: Sessions Module Development
 #### 5.1 Sessions Model
-- [ ] Define Session struct in `pkg/models/session.go`
-  - [ ] Add fields: ID, ActivityID, GroupID, StartTime, EndTime, Score
-  - [ ] Implement validation methods
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
+- [x] Define Session struct in `pkg/models/session.go`
+  - [x] Add fields: ID, ActivityID, GroupID, StartTime, EndTime, Score
+  - [x] Implement validation methods
+  - [x] Implement JSON marshaling/unmarshaling
+  - [x] Add database tags
 
-- [ ] Write Sessions model tests
+- [x] Write Sessions model tests
+  - [x] Test struct creation
+  - [x] Test validation logic
+  - [x] Test JSON serialization
+  - [x] Test session duration calculation
+  - [x] Test session completion status
 
 #### 5.2 Sessions Repository
-- [ ] Create Sessions repository
-  - [ ] Implement Create method
-  - [ ] Implement Update method
-  - [ ] Implement List method with pagination
-  - [ ] Implement GetByID method
-  - [ ] Implement methods to start/end session
+- [x] Create Sessions repository
+  - [x] Implement Create method
+  - [x] Implement Update method
+  - [x] Implement List method with pagination
+  - [x] Implement GetByID method
+  - [x] Implement methods to start/end session
+  - [x] Add error handling for each method
 
-- [ ] Write Sessions repository tests
+- [x] Write Sessions repository tests
+  - [x] Test CRUD operations
+  - [x] Test pagination
+  - [x] Test error scenarios
 
 #### 5.3 Sessions Service
-- [ ] Create Sessions service
-  - [ ] Implement session creation logic
-  - [ ] Implement session management methods
-  - [ ] Add validation and error handling
+- [x] Create Sessions service
+  - [x] Implement session creation logic
+  - [x] Implement session management methods
+  - [x] Add validation and error handling
 
-- [ ] Write Sessions service tests
+- [x] Write Sessions service tests
+  - [x] Test business logic
+  - [x] Test error scenarios
+  - [x] Test service method interactions
 
 #### 5.4 Sessions Handlers
-- [ ] Create Sessions handlers
-  - [ ] Implement GET /api/sessions endpoints
-  - [ ] Implement POST /api/sessions endpoint
-  - [ ] Implement PUT /api/sessions endpoint
-  - [ ] Add request validation
-  - [ ] Implement error responses
+- [x] Create Sessions handlers
+  - [x] Implement GET /api/sessions endpoints
+  - [x] Implement POST /api/sessions endpoint
+  - [x] Implement PUT /api/sessions endpoint
+  - [x] Implement DELETE /api/sessions endpoint
+  - [x] Add request validation
+  - [x] Implement error responses
 
-- [ ] Write Sessions handler tests
+- [x] Write Sessions handler tests
+  - [x] Test each endpoint
+  - [x] Test request validation
+  - [x] Test error handling
 
 ### Phase 6: Session Activities Module Development
 #### 6.1 Session Activities Model
