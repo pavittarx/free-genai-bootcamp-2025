@@ -39,7 +39,6 @@
   - [x] Create migration scripts for:
     - [x] Words table
     - [x] Groups table
-    - [x] Word-Groups table
     - [x] Study Activities table
     - [x] Sessions table
     - [x] Session Activities table
@@ -139,108 +138,80 @@
 
 ### Phase 2: Groups Module Development
 #### 2.1 Group Model
-- [ ] Define Group struct in `pkg/models/group.go`
-  - [ ] Add fields: ID, Group, CreatedAt
-  - [ ] Implement validation methods
-    - [ ] Validate group name length
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
+- [x] Define Group struct in `pkg/models/group.go`
+  - [x] Add fields: ID, Group, CreatedAt, Description
+  - [x] Implement validation methods
+    - [x] Validate group name length
+  - [x] Implement JSON marshaling/unmarshaling
+  - [x] Add database tags
 
-- [ ] Write Group model tests
-  - [ ] Test struct creation
-  - [ ] Test validation logic
-  - [ ] Test JSON serialization
+- [x] Write Group model tests
+  - [x] Test struct creation
+  - [x] Test validation logic
+  - [x] Test JSON serialization
 
 #### 2.2 Group Repository
-- [ ] Create Group repository in `pkg/repository/group_repository.go`
-  - [ ] Implement Create method
-  - [ ] Implement GetByID method
-  - [ ] Implement Update method
-  - [ ] Implement Delete method
-  - [ ] Implement List method with pagination
-  - [ ] Implement Search method
-  - [ ] Add error handling for each method
+- [x] Create Group repository in `pkg/repository/group_repository.go`
+  - [x] Implement Create method
+  - [x] Implement GetByID method
+  - [x] Implement Update method
+  - [x] Implement Delete method
+  - [x] Implement List method with pagination
+  - [x] Implement Search method
+  - [x] Add error handling for each method
 
-- [ ] Write Group repository tests
-  - [ ] Test CRUD operations
-  - [ ] Test pagination
-  - [ ] Test search functionality
-  - [ ] Test error scenarios
+- [x] Write Group repository tests
+  - [x] Test CRUD operations
+  - [x] Test pagination
+  - [x] Test search functionality
+  - [x] Test error scenarios
 
 #### 2.3 Group Service
-- [ ] Create Group service in `pkg/services/group_service.go`
-  - [ ] Define service interface
-  - [ ] Implement service methods
-    - [ ] Group creation with validation
-    - [ ] Group retrieval methods
-    - [ ] Group search and filtering
-  - [ ] Implement business logic
-  - [ ] Add comprehensive error handling
+- [x] Create Group service in `pkg/services/group_service.go`
+  - [x] Define service interface
+  - [x] Implement service methods
+    - [x] Group creation with validation
+    - [x] Group retrieval methods
+    - [x] Group search and filtering
+  - [x] Implement business logic
+  - [x] Add comprehensive error handling
 
-- [ ] Write Group service tests
-  - [ ] Test business logic
-  - [ ] Test error scenarios
-  - [ ] Test service method interactions
+- [x] Write Group service tests
+  - [x] Test business logic
+  - [x] Test error scenarios
+  - [x] Test service method interactions
 
 #### 2.4 Group Handlers
-- [ ] Create Group handlers in `pkg/handlers/group_handler.go`
-  - [ ] Implement HTTP handlers for:
-    - [ ] GET /api/groups (list groups)
-    - [ ] GET /api/groups/:id (get group details)
-    - [ ] GET /api/groups/:id/words (get words in group)
-    - [ ] GET /api/groups/:id/words/random (get random words in group)
-    - [ ] POST /api/groups (create group)
-    - [ ] PUT /api/groups/:id (update group)
-    - [ ] DELETE /api/groups/:id (delete group)
-  - [ ] Add request validation
-  - [ ] Implement error responses
-  - [ ] Add logging
+- [x] Create Group handlers in `pkg/handlers/group_handler.go`
+  - [x] Implement HTTP handlers for:
+    - [x] GET /api/groups (list groups)
+    - [x] GET /api/groups/:id (get group details)
+    - [x] GET /api/groups/:id/words (get words in group)
+    - [x] GET /api/groups/:id/words/random (get random words in group)
+    - [x] POST /api/groups (create group)
+    - [x] PUT /api/groups/:id (update group)
+    - [x] DELETE /api/groups/:id (delete group)
+  - [x] Add request validation
+  - [x] Implement error responses
+  - [x] Add logging
 
-- [ ] Write handler integration tests
-  - [ ] Test each endpoint
-  - [ ] Test request validation
-  - [ ] Test error handling
-
-### Phase 3: Word-Groups Module Development
-#### 3.1 Word-Groups Model
-- [ ] Define WordGroup struct in `pkg/models/word_group.go`
-  - [ ] Add fields: ID, GroupID, WordID
-  - [ ] Implement validation methods
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
-
-- [ ] Write Word-Groups model tests
-
-#### 3.2 Word-Groups Repository
-- [ ] Create Word-Groups repository
-  - [ ] Implement methods to associate words with groups
-  - [ ] Implement methods to retrieve words by group
-  - [ ] Implement methods to retrieve groups for a word
-
-- [ ] Write Word-Groups repository tests
-
-#### 3.3 Word-Groups Service
-- [ ] Create Word-Groups service
-  - [ ] Implement business logic for word-group associations
-  - [ ] Add validation and error handling
-
-- [ ] Write Word-Groups service tests
-
-#### 3.4 Word-Groups Handlers
-- [ ] Create Word-Groups handlers
-  - [ ] Implement endpoints for managing word-group relationships
-
-- [ ] Write Word-Groups handler tests
+- [x] Write handler integration tests
+  - [x] Test each endpoint
+  - [x] Test request validation
+  - [x] Test error handling
 
 ### Phase 4: Study Activities Module Development
 #### 4.1 Study Activities Model
 - [ ] Define StudyActivity struct in `pkg/models/study_activity.go`
-  - [ ] Add fields: ID, Name, Description, Image
+  - [ ] Add fields: ID, Name, Description, Image, Score
   - [ ] Implement validation methods
   - [ ] Implement JSON marshaling/unmarshaling
   - [ ] Add database tags
 
 - [ ] Write Study Activities model tests
+  - [ ] Test struct creation
+  - [ ] Test validation logic
+  - [ ] Test JSON serialization
 
 #### 4.2 Study Activities Repository
 - [ ] Create Study Activities repository
@@ -248,6 +219,8 @@
   - [ ] Implement list and search methods
 
 - [ ] Write Study Activities repository tests
+  - [ ] Test CRUD operations
+  - [ ] Test list and search functionality
 
 #### 4.3 Study Activities Service
 - [ ] Create Study Activities service
@@ -255,6 +228,9 @@
   - [ ] Add validation and error handling
 
 - [ ] Write Study Activities service tests
+  - [ ] Test business logic
+  - [ ] Test error scenarios
+  - [ ] Test service method interactions
 
 #### 4.4 Study Activities Handlers
 - [ ] Create Study Activities handlers

@@ -36,6 +36,15 @@ UPDATE words SET created_at = '${TIMESTAMP}' WHERE created_at IS NULL;
 -- Update word_groups created_at
 UPDATE word_groups SET created_at = '${TIMESTAMP}' WHERE created_at IS NULL;
 
+-- Import study activities with timestamp
+.import --skip 1 ${PROJECT_DIR}/db/seeds/study_activities.csv study_activities
+
+-- Update study_activities created_at
+UPDATE study_activities SET created_at = '${TIMESTAMP}' WHERE created_at IS NULL;
+
+-- Verify study activities import
+SELECT 'Study Activities count: ' || COUNT(*) FROM study_activities;
+
 -- Populate full-text search index
 INSERT INTO words_fts (hindi, hinglish, english)
 SELECT hindi, hinglish, english FROM words;
@@ -44,9 +53,11 @@ SELECT hindi, hinglish, english FROM words;
 SELECT 'Groups count: ' || COUNT(*) FROM groups;
 SELECT 'Words count: ' || COUNT(*) FROM words;
 SELECT 'Word Groups count: ' || COUNT(*) FROM word_groups;
+SELECT 'Study Activities count: ' || COUNT(*) FROM study_activities;
 SELECT 'First group created_at: ' || created_at FROM groups LIMIT 1;
 SELECT 'First word created_at: ' || created_at FROM words LIMIT 1;
 SELECT 'First word_group created_at: ' || created_at FROM word_groups LIMIT 1;
+SELECT 'First study activity created_at: ' || created_at FROM study_activities LIMIT 1;
 EOF
 
 # Check the exit status

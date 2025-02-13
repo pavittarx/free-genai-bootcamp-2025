@@ -41,6 +41,7 @@ columns:
    - name: string 
    - description: string
    - image: string
+   - score: integer
    - created_at: datetime
 
 table: sessions
