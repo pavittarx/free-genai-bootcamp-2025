@@ -1,0 +1,191 @@
+basePath: /api/v1
+definitions:
+  models.Group:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@languageportal.com
+    name: Language Portal Support
+  description: A backend API for managing language learning resources
+  title: Language Portal API
+  version: "1.0"
+paths:
+  /groups:
+    get:
+      description: Retrieve a paginated list of groups with optional search
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Groups retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List groups
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      description: Create a new group with a name and optional description
+      parameters:
+      - description: Group details
+        in: body
+        name: group
+        required: true
+        schema:
+          $ref: '#/definitions/models.Group'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Group created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new group
+      tags:
+      - groups
+  /groups/{id}:
+    delete:
+      description: Delete an existing group by its unique identifier
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid group ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Group not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a group
+      tags:
+      - groups
+    get:
+      description: Retrieve a group's details using its unique identifier
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid group ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Group not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a group by ID
+      tags:
+      - groups
+    put:
+      consumes:
+      - application/json
+      description: Update an existing group's details by its ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated group details
+        in: body
+        name: group
+        required: true
+        schema:
+          $ref: '#/definitions/models.Group'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Group not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a group
+      tags:
+      - groups
+schemes:
+- http
+swagger: "2.0"

@@ -294,38 +294,46 @@
 
 ### Phase 6: Session Activities Module Development
 #### 6.1 Session Activities Model
-- [ ] Define SessionActivity struct in `pkg/models/session_activity.go`
-  - [ ] Add fields: ID, SessionID, ActivityID, Question, Answer, Result, Score
-  - [ ] Implement validation methods
-  - [ ] Implement JSON marshaling/unmarshaling
-  - [ ] Add database tags
-
-- [ ] Write Session Activities model tests
+- [x] Define SessionActivity struct in `pkg/models/session_activity.go`
+  - [x] Add fields: ID, SessionID, ActivityID, Question, Answer, Result, Score
+  - [x] Implement validation methods
+  - [x] Implement JSON marshaling/unmarshaling
+  - [x] Add database tags
+  - [x] Implement helper methods for result checking
 
 #### 6.2 Session Activities Repository
-- [ ] Create Session Activities repository
-  - [ ] Implement Create method
-  - [ ] Implement List method
-  - [ ] Implement methods to track activity progress
+- [x] Create Session Activities repository in `pkg/repository/session_activity_repository.go`
+  - [x] Implement Create method
+  - [x] Implement List method
+  - [x] Implement methods to track activity progress
+  - [x] Add error handling for each method
 
-- [ ] Write Session Activities repository tests
+- [x] Write Session Activities repository tests
+  - [x] Test CRUD operations
+  - [x] Test error scenarios
 
 #### 6.3 Session Activities Service
-- [ ] Create Session Activities service
-  - [ ] Implement logic for adding activities to sessions
-  - [ ] Implement scoring and result tracking
-  - [ ] Add validation and error handling
+- [x] Create Session Activities service in `pkg/services/session_activity_service.go`
+  - [x] Implement logic for adding activities to sessions
+  - [x] Implement scoring and result tracking
+  - [x] Add validation and error handling
 
-- [ ] Write Session Activities service tests
+- [x] Write Session Activities service tests
+  - [x] Test business logic
+  - [x] Test error scenarios
+  - [x] Test service method interactions
 
 #### 6.4 Session Activities Handlers
-- [ ] Create Session Activities handlers
-  - [ ] Implement POST /api/sessions/:id/activity endpoint
-  - [ ] Implement GET /api/sessions/:id/activity endpoint
-  - [ ] Add request validation
-  - [ ] Implement error responses
+- [x] Create Session Activities handlers in `pkg/handlers/session_activity_handler.go`
+  - [x] Implement POST /api/sessions/:id/activity endpoint
+  - [x] Implement GET /api/sessions/:id/activity endpoint
+  - [x] Add request validation
+  - [x] Implement error responses
 
-- [ ] Write Session Activities handler tests
+- [x] Write Session Activities handler tests
+  - [x] Test each endpoint
+  - [x] Test request validation
+  - [x] Test error handling
 
 ### Phase 7: Integration and Final Testing
 - [ ] Comprehensive integration testing

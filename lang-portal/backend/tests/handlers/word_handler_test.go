@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+"github.com/pavittarx/lang-portal/backend/tests/testutils"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -13,7 +14,6 @@ import (
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
 	"github.com/pavittarx/lang-portal/backend/pkg/services"
 	"github.com/stretchr/testify/assert"
-	"github.com/pavittarx/lang-portal/backend/tests/testutils"
 )
 
 func setupTest(t *testing.T) (*echo.Echo, *handlers.WordHandler, func()) {

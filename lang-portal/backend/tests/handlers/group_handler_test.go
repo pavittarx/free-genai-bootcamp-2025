@@ -14,8 +14,8 @@ import (
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
 	"github.com/pavittarx/lang-portal/backend/pkg/services"
-	"github.com/stretchr/testify/assert"
 	"github.com/pavittarx/lang-portal/backend/tests/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func setupGroupTest(t *testing.T) (*echo.Echo, *handlers.GroupHandler, func()) {
@@ -94,11 +94,20 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, rec.Code)
 
 			if tt.wantGroup {
-				var createdGroup models.Group
-				err := json.Unmarshal(rec.Body.Bytes(), &createdGroup)
+				var response map[string]interface{}
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
 				assert.NoError(t, err)
-				assert.NotZero(t, createdGroup.ID)
-				assert.Equal(t, tt.group.Name, createdGroup.Name)
+
+				group, ok := response["group"].(map[string]interface{})
+				assert.True(t, ok, "response should contain a group")
+
+				idFloat, ok := group["id"].(float64)
+				assert.True(t, ok, "group should have an ID")
+				assert.NotZero(t, idFloat)
+
+				name, ok := group["name"].(string)
+				assert.True(t, ok, "group should have a name")
+				assert.Equal(t, tt.group.Name, name)
 			}
 		})
 	}
@@ -121,9 +130,16 @@ func TestGroupHandler_GetGroupByID(t *testing.T) {
 	err := handler.CreateGroup(c)
 	assert.NoError(t, err)
 
-	var createdGroup models.Group
-	err = json.Unmarshal(rec.Body.Bytes(), &createdGroup)
+	var response map[string]interface{}
+	err = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.NoError(t, err)
+
+	groupMap, ok := response["group"].(map[string]interface{})
+	assert.True(t, ok, "response should contain a group")
+
+	idFloat, ok := groupMap["id"].(float64)
+	assert.True(t, ok, "group should have an ID")
+	createdGroupID := int64(idFloat)
 
 	tests := []struct {
 		name       string
@@ -132,7 +148,7 @@ func TestGroupHandler_GetGroupByID(t *testing.T) {
 	}{
 		{
 			name:       "existing group",
-			id:         strconv.FormatInt(createdGroup.ID, 10),
+			id:         strconv.FormatInt(createdGroupID, 10),
 			wantStatus: http.StatusOK,
 		},
 		{
@@ -161,11 +177,20 @@ func TestGroupHandler_GetGroupByID(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, rec.Code)
 
 			if tt.wantStatus == http.StatusOK {
-				var retrievedGroup models.Group
-				err := json.Unmarshal(rec.Body.Bytes(), &retrievedGroup)
+				var response map[string]interface{}
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
 				assert.NoError(t, err)
-				assert.Equal(t, createdGroup.ID, retrievedGroup.ID)
-				assert.Equal(t, createdGroup.Name, retrievedGroup.Name)
+
+				group, ok := response["group"].(map[string]interface{})
+				assert.True(t, ok, "response should contain a group")
+
+				idFloat, ok := group["id"].(float64)
+				assert.True(t, ok, "group should have an ID")
+				assert.Equal(t, float64(createdGroupID), idFloat)
+
+				name, ok := group["name"].(string)
+				assert.True(t, ok, "group should have a name")
+				assert.Equal(t, "Test Group", name)
 			}
 		})
 	}
@@ -188,9 +213,16 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 	err := handler.CreateGroup(c)
 	assert.NoError(t, err)
 
-	var createdGroup models.Group
-	err = json.Unmarshal(rec.Body.Bytes(), &createdGroup)
+	var response map[string]interface{}
+	err = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.NoError(t, err)
+
+	groupMap, ok := response["group"].(map[string]interface{})
+	assert.True(t, ok, "response should contain a group")
+
+	idFloat, ok := groupMap["id"].(float64)
+	assert.True(t, ok, "group should have an ID")
+	createdGroupID := int64(idFloat)
 
 	tests := []struct {
 		name       string
@@ -199,40 +231,22 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name:    "valid update",
-			groupID: strconv.FormatInt(createdGroup.ID, 10),
-			updateData: models.Group{
-				ID:   createdGroup.ID,
-				Name: "Updated Group",
-			},
+			name:       "valid update",
+			groupID:    strconv.FormatInt(createdGroupID, 10),
+			updateData: models.Group{Name: "Updated Group"},
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:    "invalid update - empty name",
-			groupID: strconv.FormatInt(createdGroup.ID, 10),
-			updateData: models.Group{
-				ID:   createdGroup.ID,
-				Name: "",
-			},
+			name:       "non-existing group",
+			groupID:    "999",
+			updateData: models.Group{Name: "Updated Group"},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name:       "invalid group name",
+			groupID:    strconv.FormatInt(createdGroupID, 10),
+			updateData: models.Group{Name: "A"},
 			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name:    "non-existing group",
-			groupID: "999",
-			updateData: models.Group{
-				ID:   999,
-				Name: "Updated Group",
-			},
-			wantStatus: http.StatusNotFound,
-		},
-		{
-			name:    "non-existing group",
-			groupID: "999",
-			updateData: models.Group{
-				ID:   0,
-				Name: "Updated Group",
-			},
-			wantStatus: http.StatusNotFound,
 		},
 	}
 
@@ -252,10 +266,16 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 			assert.Equal(t, tt.wantStatus, rec.Code)
 
 			if tt.wantStatus == http.StatusOK {
-				var updatedGroup models.Group
-				err := json.Unmarshal(rec.Body.Bytes(), &updatedGroup)
+				var response map[string]interface{}
+				err := json.Unmarshal(rec.Body.Bytes(), &response)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.updateData.Name, updatedGroup.Name)
+
+				group, ok := response["group"].(map[string]interface{})
+				assert.True(t, ok, "response should contain a group")
+
+				name, ok := group["name"].(string)
+				assert.True(t, ok, "group should have a name")
+				assert.Equal(t, tt.updateData.Name, name)
 			}
 		})
 	}
@@ -278,9 +298,16 @@ func TestGroupHandler_DeleteGroup(t *testing.T) {
 	err := handler.CreateGroup(c)
 	assert.NoError(t, err)
 
-	var createdGroup models.Group
-	err = json.Unmarshal(rec.Body.Bytes(), &createdGroup)
+	var response map[string]interface{}
+	err = json.Unmarshal(rec.Body.Bytes(), &response)
 	assert.NoError(t, err)
+
+	groupMap, ok := response["group"].(map[string]interface{})
+	assert.True(t, ok, "response should contain a group")
+
+	idFloat, ok := groupMap["id"].(float64)
+	assert.True(t, ok, "group should have an ID")
+	createdGroupID := int64(idFloat)
 
 	tests := []struct {
 		name       string
@@ -289,7 +316,7 @@ func TestGroupHandler_DeleteGroup(t *testing.T) {
 	}{
 		{
 			name:       "existing group",
-			groupID:    strconv.FormatInt(createdGroup.ID, 10),
+			groupID:    strconv.FormatInt(createdGroupID, 10),
 			wantStatus: http.StatusOK,
 		},
 		{

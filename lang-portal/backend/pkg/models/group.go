@@ -15,18 +15,16 @@ type Group struct {
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 }
 
-// Validate performs validation checks on the Group struct
+// Validate checks if the group is valid
 func (g *Group) Validate() error {
-	// Trim whitespace
+	// Trim whitespace from name
 	g.Name = strings.TrimSpace(g.Name)
-	g.Description = strings.TrimSpace(g.Description)
 
-	// Check for empty group name
+	// Check name length
 	if g.Name == "" {
 		return errors.New("group name cannot be empty")
 	}
 
-	// Check group name length
 	if len(g.Name) < 2 || len(g.Name) > 50 {
 		return errors.New("group name must be between 2 and 50 characters")
 	}

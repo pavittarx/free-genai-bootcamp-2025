@@ -1,12 +1,12 @@
 package repository_test
 
 import (
+"github.com/pavittarx/lang-portal/backend/tests/testutils"
 	"context"
 	"testing"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
-	"github.com/pavittarx/lang-portal/backend/tests/testutils"
 	"github.com/stretchr/testify/assert"
 )
 

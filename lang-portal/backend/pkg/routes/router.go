@@ -12,7 +12,8 @@ func RegisterRoutes(e *echo.Echo,
 	wordHandler *handlers.WordHandler, 
 	groupHandler *handlers.GroupHandler, 
 	studyActivityHandler *handlers.StudyActivityHandler,
-	sessionHandler *handlers.SessionHandler) {
+	sessionHandler *handlers.SessionHandler,
+	sessionActivityHandler *handlers.SessionActivityHandler) {
 	// Health check endpoints
 	e.GET("/api", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
@@ -49,4 +50,10 @@ func RegisterRoutes(e *echo.Echo,
 	e.POST("/api/sessions", sessionHandler.CreateSession)
 	e.PUT("/api/sessions/:id", sessionHandler.UpdateSession)
 	e.DELETE("/api/sessions/:id", sessionHandler.DeleteSession)
+
+	// Session Activity routes
+	e.POST("/api/sessions/:session_id/activities", sessionActivityHandler.AddSessionActivity)
+	e.GET("/api/sessions/:session_id/activities", sessionActivityHandler.GetSessionActivities)
+	e.PUT("/api/session-activities/:id", sessionActivityHandler.EvaluateSessionActivity)
+	e.DELETE("/api/session-activities/:id", sessionActivityHandler.DeleteSessionActivity)
 }

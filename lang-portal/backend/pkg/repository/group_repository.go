@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 )
@@ -20,17 +21,23 @@ func NewSQLiteGroupRepository(db *sql.DB) *SQLiteGroupRepository {
 
 // Create adds a new group to the database
 func (r *SQLiteGroupRepository) Create(ctx context.Context, group *models.Group) error {
-	// Validate the group before creating
+	// Validate the group
 	if err := group.Validate(); err != nil {
 		return err
 	}
 
-	// Sanitize the group name and description
-	group.Sanitize()
+	// SQL query to insert a new group
+	query := `
+		INSERT INTO groups (name, description, created_at) 
+		VALUES (?, ?, ?)
+	`
 
-	// Prepare the SQL statement
-	query := `INSERT INTO groups (name, description, created_at) VALUES (?, ?, datetime('now'))`
-	result, err := r.db.ExecContext(ctx, query, group.Name, group.Description)
+	// Execute the insert query
+	result, err := r.db.ExecContext(ctx, query,
+		group.Name,
+		group.Description,
+		time.Now(),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to create group: %w", err)
 	}
@@ -41,7 +48,9 @@ func (r *SQLiteGroupRepository) Create(ctx context.Context, group *models.Group)
 		return fmt.Errorf("failed to get last insert ID: %w", err)
 	}
 
+	// Set the ID of the group
 	group.ID = id
+
 	return nil
 }
 
