@@ -10,6 +10,7 @@ The portal in its current form, will do the following:
 - The database used will be SQLite3. 
 - The API request and response will be in JSON format.
 - The API will be stateless, and will not store any persistent data.
+- The API will not be versioned. 
 
 ## Database Design
 

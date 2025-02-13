@@ -6,11 +6,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/pavittarx/lang-portal/backend/pkg/services"
-
-	// Swagger annotations and request types
-	// @Summary Session Activity Handler
-	// @Description Handles HTTP requests related to session activities
-	// @Tags session-activities
 )
 
 // SessionActivityHandler handles HTTP requests related to session activities
@@ -37,17 +32,6 @@ type EvaluateSessionActivityRequest struct {
 }
 
 // AddSessionActivity handles adding a new activity to a session
-// @Summary Add session activity
-// @Description Add a new activity to an existing session
-// @Tags session-activities
-// @Accept json
-// @Produce json
-// @Param session_id path int true "Session ID"
-// @Param activity body AddSessionActivityRequest true "Session activity details"
-// @Success 201 {object} models.SessionActivity "Session activity added successfully"
-// @Failure 400 {object} map[string]string "Invalid request payload or session/activity ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /sessions/{session_id}/activities [post]
 func (h *SessionActivityHandler) AddSessionActivity(c echo.Context) error {
 	// Request body struct for adding a session activity
 	var req AddSessionActivityRequest
@@ -81,17 +65,6 @@ func (h *SessionActivityHandler) AddSessionActivity(c echo.Context) error {
 }
 
 // EvaluateSessionActivity handles scoring and updating a session activity
-// @Summary Evaluate session activity
-// @Description Evaluate and score a session activity
-// @Tags session-activities
-// @Accept json
-// @Produce json
-// @Param id path int true "Session Activity ID"
-// @Param evaluation body EvaluateSessionActivityRequest true "Evaluation details"
-// @Success 204 "Session activity evaluated successfully"
-// @Failure 400 {object} map[string]string "Invalid request payload or session activity ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /session-activities/{id} [put]
 func (h *SessionActivityHandler) EvaluateSessionActivity(c echo.Context) error {
 	// Parse session activity ID from URL parameter
 	idStr := c.Param("id")
@@ -126,15 +99,6 @@ func (h *SessionActivityHandler) EvaluateSessionActivity(c echo.Context) error {
 }
 
 // GetSessionActivities retrieves all activities for a specific session
-// @Summary List session activities
-// @Description Retrieve all activities for a specific session
-// @Tags session-activities
-// @Produce json
-// @Param session_id path int true "Session ID"
-// @Success 200 {array} models.SessionActivity "Session activities retrieved successfully"
-// @Failure 400 {object} map[string]string "Invalid session ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /sessions/{session_id}/activities [get]
 func (h *SessionActivityHandler) GetSessionActivities(c echo.Context) error {
 	// Parse session ID from URL parameter
 	idStr := c.Param("session_id")
@@ -160,15 +124,6 @@ func (h *SessionActivityHandler) GetSessionActivities(c echo.Context) error {
 }
 
 // DeleteSessionActivity handles removing a session activity
-// @Summary Delete session activity
-// @Description Delete a specific session activity
-// @Tags session-activities
-// @Produce json
-// @Param id path int true "Session Activity ID"
-// @Success 204 "Session activity deleted successfully"
-// @Failure 400 {object} map[string]string "Invalid session activity ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /session-activities/{id} [delete]
 func (h *SessionActivityHandler) DeleteSessionActivity(c echo.Context) error {
 	// Parse session activity ID from URL parameter
 	idStr := c.Param("id")

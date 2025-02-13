@@ -18,7 +18,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/sessions": {
+        "/api/sessions": {
             "get": {
                 "description": "Retrieve a paginated list of learning sessions",
                 "produces": [
@@ -116,7 +116,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/sessions/{id}": {
+        "/api/sessions/{id}": {
             "get": {
                 "description": "Retrieve a specific session's details using its unique identifier",
                 "produces": [
@@ -259,7 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/words": {
+        "/api/words": {
             "get": {
                 "description": "Retrieve a paginated list of words with optional search and filtering",
                 "produces": [
@@ -367,7 +367,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/words/random": {
+        "/api/words/random": {
             "get": {
                 "description": "Retrieve a random word from the database",
                 "produces": [
@@ -396,7 +396,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/words/search": {
+        "/api/words/search": {
             "get": {
                 "description": "Search for words using a query term and optional language filter",
                 "produces": [
@@ -441,7 +441,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/words/{id}": {
+        "/api/words/{id}": {
             "get": {
                 "description": "Retrieve a word's details using its unique identifier",
                 "produces": [

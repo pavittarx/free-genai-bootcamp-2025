@@ -31,14 +31,6 @@ const (
 	shutdownTimeout = 10 * time.Second
 )
 
-// @title           Language Portal API
-// @version         1.0
-// @description     A backend API for managing language learning resources
-// @contact.name    Language Portal Support
-// @contact.email   support@languageportal.com
-// @host            localhost:3000
-// @BasePath        /
-// @schemes         http
 func main() {
 	logger := initLogger()
 	sugar := logger.Sugar()

@@ -30,16 +30,16 @@ type UpdateSessionRequest struct {
 }
 
 // CreateSession handles the creation of a new session
-// @Summary Create a new session
-// @Description Create a new learning session with an activity and optional group
-// @Tags sessions
-// @Accept json
-// @Produce json
-// @Param session body CreateSessionRequest true "Session creation details"
-// @Success 201 {object} models.Session "Session created successfully"
-// @Failure 400 {object} map[string]string "Invalid request payload"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/sessions [post]
+
+
+
+
+
+
+
+
+
+
 func (h *SessionHandler) CreateSession(c echo.Context) error {
 	var req CreateSessionRequest
 	if err := c.Bind(&req); err != nil {
@@ -67,15 +67,15 @@ func (h *SessionHandler) CreateSession(c echo.Context) error {
 }
 
 // GetSessionByID retrieves a specific session
-// @Summary Get a session by ID
-// @Description Retrieve a specific session's details using its unique identifier
-// @Tags sessions
-// @Produce json
-// @Param id path int true "Session ID"
-// @Success 200 {object} models.Session "Session retrieved successfully"
-// @Failure 400 {object} map[string]string "Invalid session ID"
-// @Failure 404 {object} map[string]string "Session not found"
-// @Router /api/v1/sessions/{id} [get]
+
+
+
+
+
+
+
+
+
 func (h *SessionHandler) GetSessionByID(c echo.Context) error {
 	// Parse session ID from URL parameter
 	idStr := c.Param("id")
@@ -98,15 +98,15 @@ func (h *SessionHandler) GetSessionByID(c echo.Context) error {
 }
 
 // GetSessions retrieves a list of sessions with pagination
-// @Summary List sessions
-// @Description Retrieve a paginated list of learning sessions
-// @Tags sessions
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {array} models.Session "Sessions retrieved successfully"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/sessions [get]
+
+
+
+
+
+
+
+
+
 func (h *SessionHandler) GetSessions(c echo.Context) error {
 	// Parse pagination parameters
 	page, err := strconv.Atoi(c.QueryParam("page"))
@@ -131,17 +131,17 @@ func (h *SessionHandler) GetSessions(c echo.Context) error {
 }
 
 // UpdateSession handles updating a session (e.g., ending a session)
-// @Summary Update a session
-// @Description End a session and record its score
-// @Tags sessions
-// @Accept json
-// @Produce json
-// @Param id path int true "Session ID"
-// @Param session body UpdateSessionRequest true "Session update details"
-// @Success 204 "Session updated successfully"
-// @Failure 400 {object} map[string]string "Invalid request payload or session ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/sessions/{id} [put]
+
+
+
+
+
+
+
+
+
+
+
 func (h *SessionHandler) UpdateSession(c echo.Context) error {
 	// Parse session ID from URL parameter
 	idStr := c.Param("id")
@@ -170,15 +170,15 @@ func (h *SessionHandler) UpdateSession(c echo.Context) error {
 }
 
 // DeleteSession handles session deletion
-// @Summary Delete a session
-// @Description Delete an existing session by its unique identifier
-// @Tags sessions
-// @Produce json
-// @Param id path int true "Session ID"
-// @Success 204 "Session deleted successfully"
-// @Failure 400 {object} map[string]string "Invalid session ID"
-// @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/sessions/{id} [delete]
+
+
+
+
+
+
+
+
+
 func (h *SessionHandler) DeleteSession(c echo.Context) error {
 	// Parse session ID from URL parameter
 	idStr := c.Param("id")
