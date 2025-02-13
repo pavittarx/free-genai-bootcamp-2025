@@ -37,7 +37,7 @@ const (
 // @contact.name    Language Portal Support
 // @contact.email   support@languageportal.com
 // @host            localhost:3000
-// @BasePath        /api/v1
+// @BasePath        /
 // @schemes         http
 func main() {
 	logger := initLogger()

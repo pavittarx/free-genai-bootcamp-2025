@@ -1,5 +1,47 @@
-basePath: /api/v1
+basePath: /
 definitions:
+  handlers.AddSessionActivityRequest:
+    properties:
+      activity_id:
+        minimum: 1
+        type: integer
+      answer:
+        type: string
+      session_id:
+        minimum: 1
+        type: integer
+    required:
+    - activity_id
+    - answer
+    - session_id
+    type: object
+  handlers.CreateSessionRequest:
+    properties:
+      activity_id:
+        type: integer
+      group_id:
+        type: integer
+    required:
+    - activity_id
+    type: object
+  handlers.EvaluateSessionActivityRequest:
+    properties:
+      result:
+        type: string
+      score:
+        maximum: 100
+        minimum: 0
+        type: integer
+    required:
+    - result
+    type: object
+  handlers.UpdateSessionRequest:
+    properties:
+      score:
+        maximum: 100
+        minimum: 0
+        type: integer
+    type: object
   models.Group:
     properties:
       created_at:
@@ -11,6 +53,70 @@ definitions:
       name:
         type: string
     type: object
+  models.Session:
+    properties:
+      activity_id:
+        type: integer
+      created_at:
+        type: string
+      end_time:
+        type: string
+      group_id:
+        type: integer
+      id:
+        type: integer
+      score:
+        type: integer
+      start_time:
+        type: string
+    type: object
+  models.SessionActivity:
+    properties:
+      activity_id:
+        type: integer
+      answer:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      result:
+        type: string
+      score:
+        type: integer
+      session_id:
+        type: integer
+    type: object
+  models.StudyActivity:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+      score:
+        type: integer
+    type: object
+  models.Word:
+    properties:
+      created_at:
+        type: string
+      english:
+        type: string
+      hindi:
+        type: string
+      hinglish:
+        type: string
+      id:
+        type: integer
+      scrambled:
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact:
@@ -20,6 +126,388 @@ info:
   title: Language Portal API
   version: "1.0"
 paths:
+  /api/v1/sessions:
+    get:
+      description: Retrieve a paginated list of learning sessions
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sessions retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.Session'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List sessions
+      tags:
+      - sessions
+    post:
+      consumes:
+      - application/json
+      description: Create a new learning session with an activity and optional group
+      parameters:
+      - description: Session creation details
+        in: body
+        name: session
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Session created successfully
+          schema:
+            $ref: '#/definitions/models.Session'
+        "400":
+          description: Invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new session
+      tags:
+      - sessions
+  /api/v1/sessions/{id}:
+    delete:
+      description: Delete an existing session by its unique identifier
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Session deleted successfully
+        "400":
+          description: Invalid session ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a session
+      tags:
+      - sessions
+    get:
+      description: Retrieve a specific session's details using its unique identifier
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Session'
+        "400":
+          description: Invalid session ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Session not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a session by ID
+      tags:
+      - sessions
+    put:
+      consumes:
+      - application/json
+      description: End a session and record its score
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Session update details
+        in: body
+        name: session
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Session updated successfully
+        "400":
+          description: Invalid request payload or session ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a session
+      tags:
+      - sessions
+  /api/v1/words:
+    get:
+      description: Retrieve a paginated list of words with optional search and filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter by language
+        in: query
+        name: language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Words retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List words
+      tags:
+      - words
+    post:
+      consumes:
+      - application/json
+      description: Create a new word with details like Hindi, English, Hinglish, etc.
+      parameters:
+      - description: Word details
+        in: body
+        name: word
+        required: true
+        schema:
+          $ref: '#/definitions/models.Word'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Word created successfully
+          schema:
+            $ref: '#/definitions/models.Word'
+        "400":
+          description: Invalid request payload or validation error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new word
+      tags:
+      - words
+  /api/v1/words/{id}:
+    delete:
+      description: Delete an existing word by its unique identifier
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Word deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid word ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a word
+      tags:
+      - words
+    get:
+      description: Retrieve a word's details using its unique identifier
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Word retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Word'
+        "400":
+          description: Invalid word ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Word not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a word by ID
+      tags:
+      - words
+    put:
+      consumes:
+      - application/json
+      description: Update an existing word's details by its ID
+      parameters:
+      - description: Word ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated word details
+        in: body
+        name: word
+        required: true
+        schema:
+          $ref: '#/definitions/models.Word'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Word updated successfully
+          schema:
+            $ref: '#/definitions/models.Word'
+        "400":
+          description: Invalid request payload or word ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a word
+      tags:
+      - words
+  /api/v1/words/random:
+    get:
+      description: Retrieve a random word from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Random word retrieved successfully
+          schema:
+            $ref: '#/definitions/models.Word'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a random word
+      tags:
+      - words
+  /api/v1/words/search:
+    get:
+      description: Search for words using a query term and optional language filter
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      - description: Language filter
+        in: query
+        name: language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Search results retrieved successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search words
+      tags:
+      - words
   /groups:
     get:
       description: Retrieve a paginated list of groups with optional search
@@ -186,6 +674,163 @@ paths:
       summary: Update a group
       tags:
       - groups
+  /session-activities/{id}:
+    delete:
+      description: Delete a specific session activity
+      parameters:
+      - description: Session Activity ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Session activity deleted successfully
+        "400":
+          description: Invalid session activity ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete session activity
+      tags:
+      - session-activities
+    put:
+      consumes:
+      - application/json
+      description: Evaluate and score a session activity
+      parameters:
+      - description: Session Activity ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Evaluation details
+        in: body
+        name: evaluation
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.EvaluateSessionActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Session activity evaluated successfully
+        "400":
+          description: Invalid request payload or session activity ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Evaluate session activity
+      tags:
+      - session-activities
+  /sessions/{session_id}/activities:
+    get:
+      description: Retrieve all activities for a specific session
+      parameters:
+      - description: Session ID
+        in: path
+        name: session_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session activities retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.SessionActivity'
+            type: array
+        "400":
+          description: Invalid session ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List session activities
+      tags:
+      - session-activities
+    post:
+      consumes:
+      - application/json
+      description: Add a new activity to an existing session
+      parameters:
+      - description: Session ID
+        in: path
+        name: session_id
+        required: true
+        type: integer
+      - description: Session activity details
+        in: body
+        name: activity
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.AddSessionActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Session activity added successfully
+          schema:
+            $ref: '#/definitions/models.SessionActivity'
+        "400":
+          description: Invalid request payload or session/activity ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add session activity
+      tags:
+      - session-activities
+  /study-activities:
+    get:
+      description: Retrieve all available study activities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Study activities retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/models.StudyActivity'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List study activities
+      tags:
+      - study-activities
 schemes:
 - http
 swagger: "2.0"

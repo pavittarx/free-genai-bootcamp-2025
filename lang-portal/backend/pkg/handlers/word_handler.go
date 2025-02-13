@@ -24,6 +24,16 @@ func NewWordHandler(service *services.WordService, repo *repository.SQLiteWordRe
 }
 
 // CreateWord handles the creation of a new word
+// @Summary Create a new word
+// @Description Create a new word with details like Hindi, English, Hinglish, etc.
+// @Tags words
+// @Accept json
+// @Produce json
+// @Param word body models.Word true "Word details"
+// @Success 201 {object} models.Word "Word created successfully"
+// @Failure 400 {object} map[string]string "Invalid request payload or validation error"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words [post]
 func (h *WordHandler) CreateWord(c echo.Context) error {
 	// Create a new word instance
 	word := &models.Word{}
@@ -54,6 +64,15 @@ func (h *WordHandler) CreateWord(c echo.Context) error {
 }
 
 // GetWordByID retrieves a word by its ID
+// @Summary Get a word by ID
+// @Description Retrieve a word's details using its unique identifier
+// @Tags words
+// @Produce json
+// @Param id path int true "Word ID"
+// @Success 200 {object} models.Word "Word retrieved successfully"
+// @Failure 400 {object} map[string]string "Invalid word ID"
+// @Failure 404 {object} map[string]string "Word not found"
+// @Router /api/v1/words/{id} [get]
 func (h *WordHandler) GetWordByID(c echo.Context) error {
 	// Parse the ID from the URL parameter
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -75,6 +94,17 @@ func (h *WordHandler) GetWordByID(c echo.Context) error {
 }
 
 // UpdateWord updates an existing word
+// @Summary Update a word
+// @Description Update an existing word's details by its ID
+// @Tags words
+// @Accept json
+// @Produce json
+// @Param id path int true "Word ID"
+// @Param word body models.Word true "Updated word details"
+// @Success 200 {object} models.Word "Word updated successfully"
+// @Failure 400 {object} map[string]string "Invalid request payload or word ID"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words/{id} [put]
 func (h *WordHandler) UpdateWord(c echo.Context) error {
 	// Parse the ID from the URL parameter
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -106,6 +136,15 @@ func (h *WordHandler) UpdateWord(c echo.Context) error {
 }
 
 // DeleteWord removes a word by its ID
+// @Summary Delete a word
+// @Description Delete an existing word by its unique identifier
+// @Tags words
+// @Produce json
+// @Param id path int true "Word ID"
+// @Success 200 {object} map[string]string "Word deleted successfully"
+// @Failure 400 {object} map[string]string "Invalid word ID"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words/{id} [delete]
 func (h *WordHandler) DeleteWord(c echo.Context) error {
 	// Parse the ID from the URL parameter
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -128,6 +167,17 @@ func (h *WordHandler) DeleteWord(c echo.Context) error {
 }
 
 // ListWords retrieves a list of words
+// @Summary List words
+// @Description Retrieve a paginated list of words with optional search and filtering
+// @Tags words
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param pageSize query int false "Number of items per page" default(10)
+// @Param search query string false "Search term"
+// @Param language query string false "Filter by language"
+// @Success 200 {object} map[string]interface{} "Words retrieved successfully"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words [get]
 func (h *WordHandler) ListWords(c echo.Context) error {
 	// Parse pagination parameters with defaults
 	page, err := strconv.Atoi(c.QueryParam("page"))
@@ -173,6 +223,15 @@ func (h *WordHandler) ListWords(c echo.Context) error {
 }
 
 // SearchWords provides a search endpoint for words
+// @Summary Search words
+// @Description Search for words using a query term and optional language filter
+// @Tags words
+// @Produce json
+// @Param query query string true "Search query"
+// @Param language query string false "Language filter"
+// @Success 200 {object} map[string]interface{} "Search results retrieved successfully"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words/search [get]
 func (h *WordHandler) SearchWords(c echo.Context) error {
 	// Get search query and language
 	query := c.QueryParam("query")
@@ -194,6 +253,13 @@ func (h *WordHandler) SearchWords(c echo.Context) error {
 }
 
 // GetRandomWord handles the request to get a random word
+// @Summary Get a random word
+// @Description Retrieve a random word from the database
+// @Tags words
+// @Produce json
+// @Success 200 {object} models.Word "Random word retrieved successfully"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/words/random [get]
 func (h *WordHandler) GetRandomWord(c echo.Context) error {
 	ctx := c.Request().Context()
 

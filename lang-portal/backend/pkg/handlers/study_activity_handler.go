@@ -20,6 +20,13 @@ func NewStudyActivityHandler(service *services.StudyActivityService) *StudyActiv
 }
 
 // GetStudyActivities retrieves all available study activities
+// @Summary List study activities
+// @Description Retrieve all available study activities
+// @Tags study-activities
+// @Produce json
+// @Success 200 {array} models.StudyActivity "Study activities retrieved successfully"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /study-activities [get]
 func (h *StudyActivityHandler) GetStudyActivities(c echo.Context) error {
 	ctx := c.Request().Context()
 	activities, err := h.service.GetStudyActivities(ctx)
