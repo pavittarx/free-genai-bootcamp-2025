@@ -1,26 +1,10 @@
 <template>
-  <PageLayout 
-    :is-loading="isLoading" 
-    :error="error"
-    :on-retry="refetch"
-  >
+  <PageLayout :is-loading="isLoading" :error="error" :on-retry="refetch">
     <template #title>Learning Sessions</template>
-    
-    <template #actions>
-      <button 
-        class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition"
-        @click="startNewSession"
-      >
-        + Start Session
-      </button>
-    </template>
 
     <div v-if="sessions && sessions.length" class="space-y-4">
-      <div 
-        v-for="session in sessions" 
-        :key="session.id"
-        class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-      >
+      <div v-for="session in sessions" :key="session.id"
+        class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer">
         <div class="p-6 flex items-center justify-between">
           <div class="flex items-center space-x-4">
             <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -29,22 +13,16 @@
             <div>
               <h3 class="text-lg font-semibold text-gray-800">{{ session.name }}</h3>
               <p class="text-sm text-gray-600">
-                {{ formatDate(session.startTime) }} | 
+                {{ formatDate(session.startTime) }} |
                 Duration: {{ formatDuration(session.duration) }}
               </p>
             </div>
           </div>
           <div class="flex items-center space-x-4">
-            <span 
-              class="text-sm px-3 py-1 rounded-full"
-              :class="getStatusClass(session.status)"
-            >
+            <span class="text-sm px-3 py-1 rounded-full" :class="getStatusClass(session.status)">
               {{ session.status }}
             </span>
-            <NuxtLink 
-              :to="`/sessions/${session.id}`"
-              class="text-blue-500 hover:text-blue-700 text-sm font-medium"
-            >
+            <NuxtLink :to="`/sessions/${session.id}`" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
               View Details →
             </NuxtLink>
           </div>
@@ -76,11 +54,11 @@ interface LearningSession {
 
 const router = useRouter()
 
-const { 
-  data: sessions, 
-  isLoading, 
-  error, 
-  refetch 
+const {
+  data: sessions,
+  isLoading,
+  error,
+  refetch
 } = useQuery({
   queryKey: ['sessions'],
   queryFn: async () => {
@@ -105,13 +83,13 @@ const formatDate = (dateString: string) => {
 const formatDuration = (minutes: number) => {
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
-  return hours > 0 
-    ? `${hours}h ${remainingMinutes}m` 
+  return hours > 0
+    ? `${hours}h ${remainingMinutes}m`
     : `${minutes}m`
 }
 
 const getStatusClass = (status: string) => {
-  switch(status) {
+  switch (status) {
     case 'Completed': return 'bg-green-100 text-green-800'
     case 'In Progress': return 'bg-yellow-100 text-yellow-800'
     case 'Not Started': return 'bg-gray-100 text-gray-800'
@@ -119,7 +97,5 @@ const getStatusClass = (status: string) => {
   }
 }
 
-const startNewSession = () => {
-  router.push('/sessions/create')
-}
+// Removed startNewSession method as sessions are created from study activities
 </script>

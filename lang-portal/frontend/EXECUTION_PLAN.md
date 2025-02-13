@@ -131,22 +131,22 @@ This execution plan outlines the step-by-step approach for developing the fronte
 - [ ] Create activity launch mechanism
 
 ### Sessions
-- [ ] Create sessions table
-- [ ] Design table columns:
-  - [ ] Serial Number
-  - [ ] Session Name
-  - [ ] Study Activity
-  - [ ] Score
-- [ ] Implement row click to open session details
-- [ ] Create session details with:
-  - [ ] Serial Number
-  - [ ] Study Activity
-  - [ ] Challenge
-  - [ ] Answer
-  - [ ] Input
-  - [ ] Score
-  - [ ] Start Time
-  - [ ] End Time
+- [x] Create sessions table
+- [x] Design table columns:
+  - [x] Serial Number
+  - [x] Session Name
+  - [x] Study Activity
+  - [x] Score
+- [x] Implement row click to open session details
+- [x] Create session details with:
+  - [x] Serial Number
+  - [x] Study Activity
+  - [x] Challenge
+  - [x] Answer
+  - [x] Input
+  - [x] Score
+  - [x] Start Time
+  - [x] End Time
 
 ### Settings
 - [ ] Design settings interface
