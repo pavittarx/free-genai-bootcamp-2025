@@ -105,6 +105,7 @@ erDiagram
         string name
         string description
         string image
+        integer score
         datetime created_at
     }
 

@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS study_activities (
     name TEXT NOT NULL UNIQUE,
     description TEXT,
     image TEXT,
+    score INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT (datetime('now', 'localtime'))
 );
 

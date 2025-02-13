@@ -79,17 +79,20 @@ func setupRoutes(e *echo.Echo, db *sql.DB, sugar *zap.SugaredLogger) {
 	// Initialize repositories
 	wordRepo := repository.NewSQLiteWordRepository(db)
 	groupRepo := repository.NewSQLiteGroupRepository(db)
+	studyActivityRepo := repository.NewStudyActivityRepository(db)
 
 	// Initialize services
 	wordService := services.NewWordService(wordRepo)
 	groupService := services.NewGroupService(groupRepo)
+	studyActivityService := services.NewStudyActivityService(studyActivityRepo)
 
 	// Initialize handlers
 	wordHandler := handlers.NewWordHandler(wordService, wordRepo)
 	groupHandler := handlers.NewGroupHandler(groupService, groupRepo)
+	studyActivityHandler := handlers.NewStudyActivityHandler(studyActivityService)
 
 	// Register all routes
-	routes.RegisterRoutes(e, wordHandler, groupHandler)
+	routes.RegisterRoutes(e, wordHandler, groupHandler, studyActivityHandler)
 
 	sugar.Info("Routes initialized successfully")
 }
