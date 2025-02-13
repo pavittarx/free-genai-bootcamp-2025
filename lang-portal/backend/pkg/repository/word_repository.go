@@ -28,6 +28,9 @@ type WordRepository interface {
 
 	// GetRandomWord retrieves a random word from the database
 	GetRandomWord(ctx context.Context) (*models.Word, error)
+
+	// GetWordsByGroupID retrieves all words associated with a specific group
+	GetWordsByGroupID(ctx context.Context, groupID int64) ([]models.Word, error)
 }
 
 // ListWordsParams defines parameters for listing words

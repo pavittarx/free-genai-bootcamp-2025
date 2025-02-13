@@ -19,6 +19,9 @@ func RegisterWordRoutes(words *echo.Group, wordHandler *handlers.WordHandler) {
 	// Get a random word
 	words.GET("/random", wordHandler.GetRandomWord)
 
+	// Get words by group ID
+	words.GET("/groups/:group-id", wordHandler.GetWordsByGroupID)
+
 	// Get a word by ID
 	words.GET("/:id", wordHandler.GetWordByID)
 
@@ -27,4 +30,5 @@ func RegisterWordRoutes(words *echo.Group, wordHandler *handlers.WordHandler) {
 
 	// Delete a word
 	words.DELETE("/:id", wordHandler.DeleteWord)
+
 }

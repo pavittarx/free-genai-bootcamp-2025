@@ -121,3 +121,13 @@ func (s *WordService) SearchWords(ctx context.Context, query string, language st
 
 	return s.repo.List(ctx, params)
 }
+
+// GetRandomWord retrieves a random word from the repository
+func (s *WordService) GetRandomWord(ctx context.Context) (*models.Word, error) {
+	return s.repo.GetRandomWord(ctx)
+}
+
+// GetWordsByGroupID retrieves all words associated with a specific group
+func (s *WordService) GetWordsByGroupID(ctx context.Context, groupID int64) ([]models.Word, error) {
+	return s.repo.GetWordsByGroupID(ctx, groupID)
+}

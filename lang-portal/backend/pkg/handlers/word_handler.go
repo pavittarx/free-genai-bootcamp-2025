@@ -222,3 +222,31 @@ func (h *WordHandler) GetRandomWord(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, word)
 }
+
+// GetWordsByGroupID handles the request to get all words in a specific group
+func (h *WordHandler) GetWordsByGroupID(c echo.Context) error {
+	// Parse group ID from URL parameter
+	groupIDStr := c.Param("group-id")
+	groupID, err := strconv.ParseInt(groupIDStr, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid group ID format",
+		})
+	}
+
+	// Get words by group ID
+	words, err := h.wordRepo.GetWordsByGroupID(c.Request().Context(), groupID)
+	if err != nil {
+		log.Printf("Error getting words by group ID: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve words for the group",
+		})
+	}
+
+	// Return empty array if no words found
+	if len(words) == 0 {
+		return c.JSON(http.StatusOK, []models.Word{})
+	}
+
+	return c.JSON(http.StatusOK, words)
+}

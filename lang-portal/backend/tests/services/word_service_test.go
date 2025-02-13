@@ -53,6 +53,11 @@ func (m *MockWordRepository) GetRandomWord(ctx context.Context) (*models.Word, e
 	return args.Get(0).(*models.Word), args.Error(1)
 }
 
+func (m *MockWordRepository) GetWordsByGroupID(ctx context.Context, groupID int64) ([]models.Word, error) {
+	args := m.Called(ctx, groupID)
+	return args.Get(0).([]models.Word), args.Error(1)
+}
+
 func createTestWord() *models.Word {
 	return &models.Word{
 		ID:        1,
@@ -317,5 +322,41 @@ func TestWordService_SearchWords(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(words), total)
 	assert.Equal(t, words, listedWords)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestWordService_GetWordsByGroupID(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockWordRepository)
+	wordService := services.NewWordService(mockRepo)
+
+	groupID := int64(1)
+	expectedWords := []models.Word{
+		{
+			ID:       1,
+			English:  "test1",
+			Hindi:    "परीक्षण1",
+			Hinglish: "test1",
+		},
+		{
+			ID:       2,
+			English:  "test2",
+			Hindi:    "परीक्षण2",
+			Hinglish: "test2",
+		},
+	}
+
+	// Mock the repository method
+	mockRepo.On("GetWordsByGroupID", ctx, groupID).Return(expectedWords, nil)
+
+	// Call the service method
+	words, err := wordService.GetWordsByGroupID(ctx, groupID)
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.Equal(t, expectedWords, words)
+	assert.Len(t, words, 2)
+
+	// Verify mock expectations
 	mockRepo.AssertExpectations(t)
 }
