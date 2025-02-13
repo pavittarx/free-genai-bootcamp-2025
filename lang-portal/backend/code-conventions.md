@@ -43,11 +43,8 @@
 
 project-root/
 │
-├── cmd/                # Main application entry points
-│   └── server/
-│       └── main.go
-│
 ├── pkg/                # Reusable packages
+│   ├── routes/         # HTTP routes
 │   ├── models/         # Data structures
 │   ├── handlers/       # HTTP request handlers
 │   ├── services/       # Business logic
@@ -65,6 +62,7 @@ project-root/
 │
 ├── tests/              # Integration and end-to-end tests
 │
+├── main.go            # Main application entry point
 ├── go.mod              # Dependency management
 ├── go.sum              # Dependency checksums
 └── README.md           # Project documentation

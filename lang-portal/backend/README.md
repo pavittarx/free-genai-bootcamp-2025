@@ -140,12 +140,11 @@ erDiagram
 - /api/groups
 - /api/groups/:id
 
-- /api/word-groups
-- /api/word-groups/:id
+- /api/words/groups/:group-id  -- joins words and groups tables based on word_groups table and filters by group_id
 
-- /api/study-activities
-- /api/sessions
-- /api/session-activity
+- /api/study-activities -- lists all available study activities
+- /api/sessions -- lists all sessions so far
+- /api/sessions/:id -- lists session details including its study activities
 
 [POST]
 - /api/sessions
