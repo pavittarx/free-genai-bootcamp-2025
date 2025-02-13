@@ -11,14 +11,14 @@ BINARY_NAME=lang-portal
 BINARY_PATH=./bin/$(BINARY_NAME)
 
 # Directories
-CMD_DIR=./cmd/server
+CMD_DIR=.
 PKG_DIR=./pkg
 INTERNAL_DIR=./internal
 
 # Linting configuration
 LINT_CONFIG=.golangci.yml
 
-.PHONY: all build test lint clean init run dev run-fts5 build-fts5
+.PHONY: all build test lint clean init run dev
 
 # Default target
 all: lint test build
@@ -31,7 +31,7 @@ init:
 # Build the application
 build:
 	mkdir -p bin
-	$(GOBUILD) -o $(BINARY_PATH) $(CMD_DIR)
+	$(GOBUILD) -o $(BINARY_PATH) .
 
 # Run tests
 test:
@@ -43,7 +43,7 @@ lint:
 
 # Initialize database
 db-init:
-	./scripts/init_db.sh
+	./scripts/init_database.sh
 
 # Run the application
 run: build
@@ -52,14 +52,6 @@ run: build
 # Run with hot reloading
 dev:
 	$(HOME)/go/bin/air
-
-# Run the application with FTS5 support
-run-fts5:
-	go run --tags "fts5" ./cmd/server/main.go
-
-# Build the application with FTS5 support
-build-fts5:
-	go build --tags "fts5" -o bin/server ./cmd/server/main.go
 
 # Clean build artifacts
 clean:
