@@ -117,7 +117,7 @@ const getActivityImage = (activity: StudyActivity): string => {
 }
 
 const launchActivity = (activity: StudyActivity): void => {
-  router.push(`/study-activities/${activity.id}/launch`)
+  router.push(`/study-activities/${activity.id}`)
 }
 
 const formatDate = (dateString: string): string => {
