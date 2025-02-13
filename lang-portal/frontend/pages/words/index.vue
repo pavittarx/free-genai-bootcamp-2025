@@ -7,15 +7,15 @@ const {
   words, 
   loading, 
   error, 
-  fetchWords 
+  fetchWords,
+  searchWords
 } = useWordService()
 
 // Pagination
-const pageSize = 20
+const pageSize = 10
 const currentPage = ref(1)
 const searchQuery = ref('')
-const sortColumn = ref<keyof Word>('created_at')
-const sortDirection = ref<'asc' | 'desc'>('desc')
+const totalCount = ref(0)
 
 // Error handling
 const apiError = ref<string | null>(null)
@@ -24,11 +24,11 @@ const apiError = ref<string | null>(null)
 async function loadWords() {
   try {
     apiError.value = null
-    await fetchWords({ 
+    const result = await fetchWords({ 
       page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
+      pageSize: 10, 
     })
+    totalCount.value = result.totalCount
   } catch (err) {
     apiError.value = err instanceof Error 
       ? err.message 
@@ -37,64 +37,52 @@ async function loadWords() {
   }
 }
 
+// Search words
+async function performSearch() {
+  try {
+    apiError.value = null
+    const result = searchQuery.value 
+      ? await searchWords(searchQuery.value)
+      : await fetchWords({ 
+          page: currentPage.value, 
+          pageSize: 10 
+        })
+    
+    words.value = result.words
+    totalCount.value = result.totalCount
+    currentPage.value = 1
+  } catch (err) {
+    apiError.value = err instanceof Error 
+      ? err.message 
+      : 'Failed to search words'
+    console.error('Words search error:', err)
+  }
+}
+
 onMounted(loadWords)
 
-// Computed properties for filtering and sorting
-const filteredWords = computed(() => {
-  return words.value.filter(word => 
-    !searchQuery.value || 
-    (['hindi', 'hinglish', 'english'] as (keyof Word)[]).some(field => {
-      const value = word[field]
-      return typeof value === 'string' && 
-        value.toLowerCase().includes(searchQuery.value.toLowerCase())
-    })
-  ).sort((a, b) => {
-    const modifier = sortDirection.value === 'asc' ? 1 : -1
-    const aValue = a[sortColumn.value]
-    const bValue = b[sortColumn.value]
-    return aValue && bValue 
-      ? aValue.toString().localeCompare(bValue.toString()) * modifier 
-      : 0
-  })
-})
-
-const totalWords = computed(() => filteredWords.value.length)
-const totalPages = computed(() => Math.ceil(totalWords.value / pageSize))
-
-const paginatedWords = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  const end = start + pageSize
-  return filteredWords.value.slice(start, end)
-})
+// Computed properties
+const totalPages = computed(() => Math.ceil(totalCount.value / 10))
 
 // Methods
-function nextPage() {
+async function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
-    loadWords()
+    await loadWords()
   }
 }
 
-function prevPage() {
+async function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
-    loadWords()
-  }
-}
-
-function sortBy(column: keyof Word) {
-  if (sortColumn.value === column) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortColumn.value = column
-    sortDirection.value = 'asc'
+    await loadWords()
   }
 }
 
 // Watch for search query changes
 watch(searchQuery, () => {
   currentPage.value = 1
-  loadWords()
+  performSearch()
 })
 </script>
 
@@ -134,29 +122,23 @@ watch(searchQuery, () => {
           <table class="w-full">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-16">#</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Hindi</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">Hinglish</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">English</th>
-                <th 
-                  @click="sortBy('created_at')"
-                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-32"
-                >
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hindi</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hinglish</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">English</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Created
-                  <span v-if="sortColumn === 'created_at'" class="ml-1">
-                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
-                  </span>
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
               <tr 
-                v-for="(word, index) in paginatedWords" 
+                v-for="(word, index) in words" 
                 :key="word.id"
                 class="hover:bg-gray-50 transition-colors"
               >
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-16">
-                  {{ (currentPage - 1) * pageSize + index + 1 }}
+                  {{ (currentPage - 1) * 10 + index + 1 }}
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">{{ word.hindi }}</td>
                 <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.hinglish }}</td>
@@ -176,9 +158,9 @@ watch(searchQuery, () => {
         <!-- Pagination -->
         <div class="px-4 py-3 bg-gray-50 border-t flex justify-between items-center">
           <span class="text-sm text-gray-600">
-            Showing {{ (currentPage - 1) * pageSize + 1 }} to 
-            {{ Math.min(currentPage * pageSize, totalWords) }} of 
-            {{ totalWords }} words
+            Showing {{ (currentPage - 1) * 10 + 1 }} to 
+            {{ Math.min(currentPage * 10, totalCount) }} of 
+            {{ totalCount }} words
           </span>
           <div class="flex space-x-2">
             <button 
@@ -203,4 +185,5 @@ watch(searchQuery, () => {
 </template>
 
 <style scoped>
+/* Add any additional styling if needed */
 </style>

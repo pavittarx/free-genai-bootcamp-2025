@@ -26,13 +26,16 @@
               <tr>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-16">#</th>
                 <th 
-                  @click="sortBy('group')"
+                  @click="sortBy('name')"
                   class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                 >
                   Group Name
-                  <span v-if="sortColumn === 'group'" class="ml-1">
+                  <span v-if="sortColumn === 'name'" class="ml-1">
                     {{ sortDirection === 'asc' ? '↑' : '↓' }}
                   </span>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
                 </th>
                 <th 
                   @click="sortBy('created_at')"
@@ -47,7 +50,7 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
               <tr 
-                v-for="(group, index) in paginatedGroups" 
+                v-for="(group, index) in groups" 
                 :key="group.id"
                 class="hover:bg-gray-50 transition-colors cursor-pointer"
                 @click="navigateToGroup(group.id)"
@@ -55,13 +58,10 @@
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-16">
                   {{ (currentPage - 1) * pageSize + index + 1 }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">{{ group.group }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">{{ group.name }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ group.description }}</td>
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
-                  {{ new Date(group.created_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                  }) }}
+                  {{ formatDate(group.created_at) }}
                 </td>
               </tr>
             </tbody>
@@ -72,8 +72,8 @@
         <div class="px-4 py-3 bg-gray-50 border-t flex justify-between items-center">
           <span class="text-sm text-gray-600">
             Showing {{ (currentPage - 1) * pageSize + 1 }} to 
-            {{ Math.min(currentPage * pageSize, totalGroups) }} of 
-            {{ totalGroups }} groups
+            {{ Math.min(currentPage * pageSize, totalCount) }} of 
+            {{ totalCount }} groups
           </span>
           <div class="flex space-x-2">
             <button 
@@ -110,60 +110,69 @@ const { groups, loading, error, fetchGroups } = useGroupService()
 const pageSize = 20
 const currentPage = ref(1)
 const searchQuery = ref('')
-const sortColumn = ref<keyof Group>('group')
+const sortColumn = ref<keyof Group>('name')
 const sortDirection = ref<'asc' | 'desc'>('asc')
+const totalCount = ref(0)
+
+// Helper function for consistent date formatting
+function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return 'Invalid Date'
+  }
+}
 
 // Fetch groups on component mount
 onMounted(async () => {
-  await fetchGroups({ 
+  await fetchGroupsWithParams()
+})
+
+// Helper function to fetch groups with current parameters
+async function fetchGroupsWithParams() {
+  const result = await fetchGroups({ 
     page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
+    pageSize: pageSize,
+    search: searchQuery.value,
+    sortBy: sortColumn.value,
+    sortDirection: sortDirection.value
   })
-})
-
-// Computed properties for filtering and sorting
-const filteredGroups = computed(() => {
-  return groups.value.filter(group => 
-    !searchQuery.value || 
-    group.group.toLowerCase().includes(searchQuery.value.toLowerCase())
-  ).sort((a, b) => {
-    const modifier = sortDirection.value === 'asc' ? 1 : -1
-    return a[sortColumn.value].toString().localeCompare(
-      b[sortColumn.value].toString()
-    ) * modifier
+  totalCount.value = result.totalCount
+  
+  // Debug logging
+  console.log('Fetched groups:', groups.value)
+  groups.value.forEach(group => {
+    console.log('Group details:', {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      created_at: group.created_at
+    })
   })
-})
+}
 
-const totalGroups = computed(() => filteredGroups.value.length)
-const totalPages = computed(() => Math.ceil(totalGroups.value / pageSize))
-
-const paginatedGroups = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  const end = start + pageSize
-  return filteredGroups.value.slice(start, end)
-})
+// Computed properties
+const totalPages = computed(() => Math.ceil(totalCount.value / pageSize))
 
 // Methods
 function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
-    fetchGroups({ 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
+    fetchGroupsWithParams()
   }
 }
 
 function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
-    fetchGroups({ 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
+    fetchGroupsWithParams()
   }
 }
 
@@ -174,6 +183,8 @@ function sortBy(column: keyof Group) {
     sortColumn.value = column
     sortDirection.value = 'asc'
   }
+  currentPage.value = 1
+  fetchGroupsWithParams()
 }
 
 function navigateToGroup(groupId: number) {
@@ -183,10 +194,6 @@ function navigateToGroup(groupId: number) {
 // Watch for search query changes
 watch(searchQuery, () => {
   currentPage.value = 1
-  fetchGroups({ 
-    page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
-  })
+  fetchGroupsWithParams()
 })
 </script>

@@ -1,43 +1,169 @@
 
+<template>
+  <div class="h-screen w-screen overflow-hidden flex">
+    <Sidebar />
+    <main class="flex-1 px-6 py-8 bg-gray-50 overflow-hidden">
+      <div v-if="loading" class="text-center py-4">Loading group details...</div>
+      <div v-else-if="error" class="text-red-500 text-center py-4">
+        {{ error }}
+      </div>
+      <div v-else class="space-y-6">
+        <!-- Group Details -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <h1 class="text-2xl font-bold mb-4">{{ group?.name }}</h1>
+          <p class="text-gray-600 mb-4">{{ group?.description }}</p>
+          <p class="text-sm text-gray-500">
+            Created: {{ formatDate(group?.created_at || '') }}
+          </p>
+        </div>
+
+        <!-- Words in Group -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+          <div class="p-4 border-b flex justify-between items-center">
+            <h2 class="text-lg font-bold text-gray-800">Words in this Group</h2>
+            <input 
+              v-model="searchQuery"
+              type="text" 
+              placeholder="Search words..."
+              class="px-4 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          
+          <div v-if="paginatedWords.length === 0" class="p-4 text-center text-gray-500">
+            No words in this group
+          </div>
+          
+          <table v-else class="w-full">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">#</th>
+                <th 
+                  @click="sortBy('hindi')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  Hindi
+                  <span v-if="sortColumn === 'hindi'" class="ml-1">
+                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </th>
+                <th 
+                  @click="sortBy('english')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  English
+                  <span v-if="sortColumn === 'english'" class="ml-1">
+                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </th>
+                <th 
+                  @click="sortBy('hinglish')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  Hinglish
+                  <span v-if="sortColumn === 'hinglish'" class="ml-1">
+                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </th>
+                <th 
+                  @click="sortBy('created_at')"
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-32"
+                >
+                  Created
+                  <span v-if="sortColumn === 'created_at'" class="ml-1">
+                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr 
+                v-for="(word, index) in paginatedWords" 
+                :key="word.id"
+                class="hover:bg-gray-50 transition-colors"
+              >
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-16">
+                  {{ (currentPage - 1) * pageSize + index + 1 }}
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.hindi }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.english }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">{{ word.hinglish }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 w-32">
+                  {{ formatDate(word.created_at) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Pagination -->
+          <div class="px-4 py-3 bg-gray-50 border-t flex justify-between items-center">
+            <span class="text-sm text-gray-600">
+              Showing {{ (currentPage - 1) * pageSize + 1 }} to 
+              {{ Math.min(currentPage * pageSize, filteredWords.length) }} of 
+              {{ filteredWords.length }} words
+            </span>
+            <div class="flex space-x-2">
+              <button 
+                @click="prevPage" 
+                :disabled="currentPage === 1"
+                class="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              <button 
+                @click="nextPage" 
+                :disabled="currentPage === totalPages"
+                class="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from '~/components/Sidebar.vue'
-import { useGroupService, type GroupWord, type Group } from '~/services/groupService'
+import { useGroupService, type Group, type GroupWord } from '~/services/groupService'
 
 const route = useRoute()
-const groupId = Number(route.params.id)
-
 const { 
+  group, 
   groupWords, 
   loading, 
   error, 
   getGroupById, 
-  fetchGroupWords 
+  getGroupWords 
 } = useGroupService()
 
-// Pagination
-const pageSize = 20
+const groupId = Number(route.params.id)
+
+// Pagination and Sorting
+const pageSize = 10
 const currentPage = ref(1)
 const searchQuery = ref('')
 const sortColumn = ref<keyof GroupWord>('created_at')
 const sortDirection = ref<'asc' | 'desc'>('desc')
 
-// Group details
-const groupDetails = ref<Group | null>(null)
-
-// Fetch group details and words on component mount
-onMounted(async () => {
-  // Fetch group details
-  groupDetails.value = await getGroupById(groupId)
-
-  // Fetch group words
-  await fetchGroupWords(groupId, { 
-    page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
-  })
-})
+// Helper function for consistent date formatting
+function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return 'Invalid Date'
+  }
+}
 
 // Computed properties for filtering and sorting
 const filteredWords = computed(() => {
@@ -58,8 +184,7 @@ const filteredWords = computed(() => {
   })
 })
 
-const totalWords = computed(() => filteredWords.value.length)
-const totalPages = computed(() => Math.ceil(totalWords.value / pageSize))
+const totalPages = computed(() => Math.ceil(filteredWords.value.length / pageSize))
 
 const paginatedWords = computed(() => {
   const start = (currentPage.value - 1) * pageSize
@@ -71,22 +196,12 @@ const paginatedWords = computed(() => {
 function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
-    fetchGroupWords(groupId, { 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
   }
 }
 
 function prevPage() {
   if (currentPage.value > 1) {
     currentPage.value--
-    fetchGroupWords(groupId, { 
-      page: currentPage.value, 
-      limit: pageSize, 
-      search: searchQuery.value 
-    })
   }
 }
 
@@ -97,140 +212,31 @@ function sortBy(column: keyof GroupWord) {
     sortColumn.value = column
     sortDirection.value = 'asc'
   }
+  currentPage.value = 1
 }
+
+// Fetch group details and words on component mount
+onMounted(async () => {
+  try {
+    await Promise.all([
+      getGroupById(groupId),
+      getGroupWords(groupId)
+    ])
+    
+    // Debug logging
+    console.log('Group Details:', group.value)
+    console.log('Group Description:', group.value?.description)
+  } catch (err) {
+    console.error('Failed to load group details:', err)
+  }
+})
 
 // Watch for search query changes
 watch(searchQuery, () => {
   currentPage.value = 1
-  fetchGroupWords(groupId, { 
-    page: currentPage.value, 
-    limit: pageSize, 
-    search: searchQuery.value 
-  })
 })
 </script>
 
-<template>
-  <div class="h-screen w-screen overflow-hidden flex">
-    <Sidebar />
-    <main class="flex-1 px-6 py-8 bg-gray-50 overflow-hidden">
-      <!-- Group Details -->
-      <div v-if="loading" class="text-center py-4">Loading group details...</div>
-      <div v-else-if="error" class="text-red-500 text-center py-4">
-        {{ error }}
-      </div>
-      <div v-else-if="groupDetails" class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="p-4 border-b">
-          <h2 class="text-lg font-bold text-gray-800">
-            {{ groupDetails.group }}
-          </h2>
-          <p class="text-sm text-gray-500 mt-1">
-            Created on: {{ new Date(groupDetails.created_at).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }) }}
-          </p>
-        </div>
-
-        <!-- Words Table -->
-        <div class="p-4 flex justify-between items-center border-b">
-          <h3 class="text-md font-semibold text-gray-700">Words in this Group</h3>
-          <div class="flex space-x-3">
-            <input 
-              v-model="searchQuery"
-              type="text" 
-              placeholder="Search words..."
-              class="px-4 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-          </div>
-        </div>
-      
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="table-header w-16">#</th>
-                <th class="table-header">Hindi</th>
-                <th class="table-header">Hinglish</th>
-                <th class="table-header">English</th>
-                <th 
-                  @click="sortBy('created_at')"
-                  class="table-header w-32"
-                >
-                  Created
-                  <span v-if="sortColumn === 'created_at'" class="ml-1">
-                    {{ sortDirection === 'asc' ? '↑' : '↓' }}
-                  </span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              <tr 
-                v-for="(word, index) in paginatedWords" 
-                :key="word.id"
-                class="table-row hover:bg-gray-50"
-              >
-                <td class="table-cell text-gray-500 w-16">
-                  {{ (currentPage - 1) * pageSize + index + 1 }}
-                </td>
-                <td class="table-cell font-medium">{{ word.hindi }}</td>
-                <td class="table-cell">{{ word.hinglish }}</td>
-                <td class="table-cell">{{ word.english }}</td>
-                <td class="table-cell text-gray-500 w-32">
-                  {{ new Date(word.created_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                  }) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-4 py-3 bg-gray-50 border-t flex justify-between items-center">
-          <span class="text-sm text-gray-600">
-            Showing {{ (currentPage - 1) * pageSize + 1 }} to 
-            {{ Math.min(currentPage * pageSize, totalWords) }} of 
-            {{ totalWords }} words
-          </span>
-          <div class="flex space-x-2">
-            <button 
-              @click="prevPage" 
-              :disabled="currentPage === 1"
-              class="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Previous
-            </button>
-            <button 
-              @click="nextPage" 
-              :disabled="currentPage === totalPages"
-              class="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-      <div v-else class="text-center py-4 text-gray-500">
-        Group not found
-      </div>
-    </main>
-  </div>
-</template>
-
 <style scoped>
-.table-header {
-  @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors;
-}
-
-.table-cell {
-  @apply px-4 py-4 whitespace-nowrap text-sm;
-}
-
-.table-row {
-  @apply hover:bg-gray-50 transition-colors;
-}
+/* Add any additional styling if needed */
 </style>
