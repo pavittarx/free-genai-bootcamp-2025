@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 )
@@ -47,6 +48,8 @@ func (r *SessionRepository) Create(ctx context.Context, session *models.Session)
 
 // GetByID retrieves a session by its ID
 func (r *SessionRepository) GetByID(ctx context.Context, id int64) (*models.Session, error) {
+	log.Printf("Retrieving session with ID: %d", id)
+
 	query := `
 		SELECT id, activity_id, group_id, start_time, end_time, score, created_at 
 		FROM sessions 
@@ -54,34 +57,90 @@ func (r *SessionRepository) GetByID(ctx context.Context, id int64) (*models.Sess
 	`
 
 	var session models.Session
-	var endTime sql.NullTime
-	var groupID sql.NullInt64
-
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&session.ID,
 		&session.ActivityID,
-		&groupID,
+		&session.GroupID,
 		&session.StartTime,
-		&endTime,
+		&session.EndTime,
 		&session.Score,
 		&session.CreatedAt,
 	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("no session available with provided session id: %d", id)
+	}
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("session not found: %w", err)
-		}
+		log.Printf("Error retrieving session: %v", err)
 		return nil, fmt.Errorf("failed to retrieve session: %w", err)
 	}
 
-	// Handle nullable fields
-	if groupID.Valid {
-		session.GroupID = &groupID.Int64
-	}
-	if endTime.Valid {
-		session.EndTime = &endTime.Time
+	return &session, nil
+}
+
+// GetByIDWithActivities retrieves a session with its associated activities
+func (r *SessionRepository) GetByIDWithActivities(ctx context.Context, id int64) (*models.SessionWithActivities, error) {
+	log.Printf("Retrieving session with activities for ID: %d", id)
+
+	// First, retrieve the session
+	session, err := r.GetByID(ctx, id)
+	if err != nil {
+		log.Printf("Failed to retrieve session: %v", err)
+		return nil, err
 	}
 
-	return &session, nil
+	// Then, retrieve session activities
+	activitiesQuery := `
+		SELECT id, session_id, activity_id, challenge, answer, input, result, score, created_at 
+		FROM session_activities 
+		WHERE session_id = ?
+		ORDER BY created_at ASC
+	`
+
+	log.Printf("Executing activities query: %s with session ID: %d", activitiesQuery, id)
+
+	rows, err := r.db.QueryContext(ctx, activitiesQuery, id)
+	if err != nil {
+		log.Printf("Failed to query session activities: %v", err)
+		return nil, fmt.Errorf("failed to query session activities: %w", err)
+	}
+	defer rows.Close()
+
+	var activities []models.SessionActivity
+	for rows.Next() {
+		var activity models.SessionActivity
+		err := rows.Scan(
+			&activity.ID,
+			&activity.SessionID,
+			&activity.ActivityID,
+			&activity.Challenge,
+			&activity.Answer,
+			&activity.Input,
+			&activity.Result,
+			&activity.Score,
+			&activity.CreatedAt,
+		)
+		if err != nil {
+			log.Printf("Failed to scan session activity: %v", err)
+			return nil, fmt.Errorf("failed to scan session activity: %w", err)
+		}
+
+		activities = append(activities, activity)
+	}
+
+	if err = rows.Err(); err != nil {
+		log.Printf("Error iterating over session activities: %v", err)
+		return nil, fmt.Errorf("error iterating over session activities: %w", err)
+	}
+
+	log.Printf("Retrieved %d session activities", len(activities))
+
+	// Combine session and activities
+	return &models.SessionWithActivities{
+		Session:     *session,
+		Activities: activities,
+	}, nil
 }
 
 // Update updates an existing session
@@ -106,25 +165,38 @@ func (r *SessionRepository) Update(ctx context.Context, session *models.Session)
 	return nil
 }
 
-// Delete removes a session
-func (r *SessionRepository) Delete(ctx context.Context, id int64) error {
-	query := `DELETE FROM sessions WHERE id = ?`
+// DeleteAllSessionActivities removes all session activities from the database
+func (r *SessionRepository) DeleteAllSessionActivities(ctx context.Context) (int64, error) {
+	query := `DELETE FROM session_activities`
 
-	result, err := r.db.ExecContext(ctx, query, id)
+	result, err := r.db.ExecContext(ctx, query)
 	if err != nil {
-		return fmt.Errorf("failed to delete session: %w", err)
+		return 0, fmt.Errorf("failed to delete all session activities: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("error checking rows affected: %w", err)
+		return 0, fmt.Errorf("error checking rows affected: %w", err)
 	}
 
-	if rowsAffected == 0 {
-		return fmt.Errorf("no session found with ID %d", id)
+	return rowsAffected, nil
+}
+
+// DeleteAll removes all sessions from the database
+func (r *SessionRepository) DeleteAll(ctx context.Context) (int64, error) {
+	query := `DELETE FROM sessions`
+
+	result, err := r.db.ExecContext(ctx, query)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete all sessions: %w", err)
 	}
 
-	return nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("error checking rows affected: %w", err)
+	}
+
+	return rowsAffected, nil
 }
 
 // List retrieves sessions with optional pagination

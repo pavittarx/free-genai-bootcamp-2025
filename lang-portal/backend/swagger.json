@@ -1,0 +1,432 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Language Portal API",
+        "description": "API for Language Learning Portal",
+        "version": "1.0.0"
+    },
+    "host": "localhost:3000",
+    "basePath": "/",
+    "schemes": ["http"],
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "paths": {
+        "/api/words": {
+            "get": {
+                "summary": "Get a list of words",
+                "description": "Lists all words",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "default": 1,
+                        "minimum": 1
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "default": 10,
+                        "minimum": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful retrieval of words",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Word"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/words/random": {
+            "get": {
+                "summary": "Get a random word",
+                "description": "Get a random word with optional group_id",
+                "parameters": [
+                    {
+                        "name": "group_id",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Optional group ID to filter random word",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Random word retrieved",
+                        "schema": {
+                            "$ref": "#/definitions/Word"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/words/search": {
+            "get": {
+                "summary": "Search words",
+                "description": "Search words with a search term",
+                "parameters": [
+                    {
+                        "name": "term",
+                        "in": "query",
+                        "type": "string",
+                        "description": "Search term",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Word"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/words/groups/{group-id}": {
+            "get": {
+                "summary": "Get words by group",
+                "description": "Lists all words from a group, joining words and groups tables based on word_groups table and filtering by group_id",
+                "parameters": [
+                    {
+                        "name": "group-id",
+                        "in": "path",
+                        "type": "integer",
+                        "description": "ID of the group to retrieve words from",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Words in the specified group",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Word"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Group not found"
+                    }
+                }
+            }
+        },
+        "/api/groups": {
+            "get": {
+                "summary": "List groups",
+                "description": "Lists all groups",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "default": 1,
+                        "minimum": 1
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "default": 10,
+                        "minimum": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful groups list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Group"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/study-activities": {
+            "get": {
+                "summary": "List study activities",
+                "description": "Lists all available study activities",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "default": 1,
+                        "minimum": 1
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "default": 10,
+                        "minimum": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful study activities list",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/StudyActivity"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sessions": {
+            "post": {
+                "summary": "Create session",
+                "description": "Start a new learning session with a specific activity_id",
+                "parameters": [
+                    {
+                        "name": "session",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": ["activity_id"],
+                            "properties": {
+                                "activity_id": {
+                                    "type": "integer",
+                                    "description": "ID of the study activity to start"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Session created successfully"
+                    }
+                }
+            },
+            "get": {
+                "summary": "List sessions",
+                "description": "Lists details of all sessions with pagination and study activity name",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "default": 1,
+                        "minimum": 1
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "default": 10,
+                        "minimum": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful sessions list"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update session",
+                "description": "Update end_time and score of a session",
+                "parameters": [
+                    {
+                        "name": "session",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": ["session_id", "score"],
+                            "properties": {
+                                "session_id": {
+                                    "type": "integer",
+                                    "description": "ID of the session to update"
+                                },
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score for the session"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session updated successfully"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete all sessions",
+                "description": "Delete all sessions and their associated session activities",
+                "responses": {
+                    "204": {
+                        "description": "All sessions deleted successfully"
+                    }
+                }
+            }
+        },
+        "/api/sessions/{id}": {
+            "get": {
+                "summary": "Get session details",
+                "description": "Lists individual session details including its study activities",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "type": "integer",
+                        "description": "ID of the session to retrieve",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Session details retrieved",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "session": {
+                                    "$ref": "#/definitions/Session"
+                                },
+                                "activities": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/SessionActivity"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found"
+                    }
+                }
+            }
+        },
+        "/api/session-activity": {
+            "post": {
+                "summary": "Add session activity",
+                "description": "Add a session activity with session_id, activity_id, challenge, answer, input, and score",
+                "parameters": [
+                    {
+                        "name": "session_activity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "required": ["session_id", "activity_id", "challenge", "answer", "input", "score"],
+                            "properties": {
+                                "session_id": {
+                                    "type": "integer",
+                                    "description": "ID of the session"
+                                },
+                                "activity_id": {
+                                    "type": "integer",
+                                    "description": "ID of the activity"
+                                },
+                                "challenge": {
+                                    "type": "string",
+                                    "description": "Challenge description"
+                                },
+                                "answer": {
+                                    "type": "string",
+                                    "description": "Correct answer"
+                                },
+                                "input": {
+                                    "type": "string",
+                                    "description": "User's input"
+                                },
+                                "score": {
+                                    "type": "integer",
+                                    "description": "Score for the activity"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Session activity added successfully"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Word": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "term": {"type": "string"},
+                "translation": {"type": "string"},
+                "group_id": {"type": "integer"},
+                "difficulty": {"type": "string"}
+            }
+        },
+        "Group": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"},
+                "description": {"type": "string"}
+            }
+        },
+        "StudyActivity": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"},
+                "description": {"type": "string"},
+                "type": {"type": "string"}
+            }
+        },
+        "Session": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "activity_id": {"type": "integer"},
+                "group_id": {"type": "integer"},
+                "start_time": {"type": "string", "format": "date-time"},
+                "end_time": {"type": "string", "format": "date-time"},
+                "score": {"type": "integer"},
+                "created_at": {"type": "string", "format": "date-time"}
+            }
+        },
+        "SessionActivity": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "session_id": {"type": "integer"},
+                "activity_id": {"type": "integer"},
+                "challenge": {"type": "string"},
+                "answer": {"type": "string"},
+                "input": {"type": "string"},
+                "result": {"type": "string"},
+                "score": {"type": "integer"},
+                "created_at": {"type": "string", "format": "date-time"}
+            }
+        }
+    }
+}

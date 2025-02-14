@@ -29,7 +29,8 @@ func NewSessionActivityService(
 func (s *SessionActivityService) AddSessionActivity(
 	ctx context.Context, 
 	sessionID, activityID int64, 
-	answer string,
+	challenge, answer, input string,
+	score int,
 ) (*models.SessionActivity, error) {
 	// Validate session exists
 	_, err := s.sessionRepo.GetByID(ctx, sessionID)
@@ -41,9 +42,11 @@ func (s *SessionActivityService) AddSessionActivity(
 	sessionActivity := &models.SessionActivity{
 		SessionID:   sessionID,
 		ActivityID:  activityID,
+		Challenge:   challenge,
 		Answer:      answer,
+		Input:       input,
 		Result:      "", // To be determined by scoring logic
-		Score:       0,  // To be calculated
+		Score:       score,
 		CreatedAt:   time.Now(),
 	}
 
@@ -58,32 +61,6 @@ func (s *SessionActivityService) AddSessionActivity(
 	}
 
 	return sessionActivity, nil
-}
-
-// EvaluateSessionActivity scores and updates a session activity
-func (s *SessionActivityService) EvaluateSessionActivity(
-	ctx context.Context, 
-	sessionActivityID int64, 
-	result string, 
-	score int,
-) error {
-	// Retrieve existing session activity
-	sessionActivity, err := s.repo.GetByID(ctx, sessionActivityID)
-	if err != nil {
-		return err
-	}
-
-	// Update result and score
-	sessionActivity.Result = result
-	sessionActivity.Score = score
-
-	// Validate updated session activity
-	if err := sessionActivity.Validate(); err != nil {
-		return err
-	}
-
-	// Update in repository
-	return s.repo.Update(ctx, sessionActivity)
 }
 
 // GetSessionActivities retrieves all activities for a specific session

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
@@ -40,6 +41,12 @@ func (s *SessionService) GetSessionByID(ctx context.Context, id int64) (*models.
 	return s.repo.GetByID(ctx, id)
 }
 
+// GetSessionByIDWithActivities retrieves a specific session with its activities
+func (s *SessionService) GetSessionByIDWithActivities(ctx context.Context, id int64) (*models.SessionWithActivities, error) {
+	// Retrieve session with activities from repository
+	return s.repo.GetByIDWithActivities(ctx, id)
+}
+
 // EndSession completes a session by setting the end time and calculating the score
 func (s *SessionService) EndSession(ctx context.Context, id int64, score int) error {
 	// Retrieve the existing session
@@ -70,7 +77,19 @@ func (s *SessionService) ListSessions(ctx context.Context, page, pageSize int) (
 	return s.repo.List(ctx, pageSize, offset)
 }
 
-// DeleteSession removes a session
-func (s *SessionService) DeleteSession(ctx context.Context, id int64) error {
-	return s.repo.Delete(ctx, id)
+// DeleteAllSessions removes all sessions and their associated session activities
+func (s *SessionService) DeleteAllSessions(ctx context.Context) (int64, error) {
+	// First, delete all session activities
+	_, err := s.repo.DeleteAllSessionActivities(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete session activities: %w", err)
+	}
+
+	// Then, delete all sessions
+	sessionsDeleted, err := s.repo.DeleteAll(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete sessions: %w", err)
+	}
+
+	return sessionsDeleted, nil
 }

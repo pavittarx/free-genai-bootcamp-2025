@@ -22,14 +22,16 @@ func NewSessionActivityRepository(db *sql.DB) *SessionActivityRepository {
 func (r *SessionActivityRepository) Create(ctx context.Context, sessionActivity *models.SessionActivity) error {
 	query := `
 		INSERT INTO session_activities 
-		(session_id, activity_id, answer, result, score, created_at) 
-		VALUES (?, ?, ?, ?, ?, ?)
+		(session_id, activity_id, challenge, answer, input, result, score, created_at) 
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
 		sessionActivity.SessionID,
 		sessionActivity.ActivityID,
+		sessionActivity.Challenge,
 		sessionActivity.Answer,
+		sessionActivity.Input,
 		sessionActivity.Result,
 		sessionActivity.Score,
 		sessionActivity.CreatedAt,
@@ -50,7 +52,7 @@ func (r *SessionActivityRepository) Create(ctx context.Context, sessionActivity 
 // GetByID retrieves a specific session activity
 func (r *SessionActivityRepository) GetByID(ctx context.Context, id int64) (*models.SessionActivity, error) {
 	query := `
-		SELECT id, session_id, activity_id, answer, result, score, created_at 
+		SELECT id, session_id, activity_id, challenge, answer, input, result, score, created_at 
 		FROM session_activities 
 		WHERE id = ?
 	`
@@ -60,7 +62,9 @@ func (r *SessionActivityRepository) GetByID(ctx context.Context, id int64) (*mod
 		&sessionActivity.ID,
 		&sessionActivity.SessionID,
 		&sessionActivity.ActivityID,
+		&sessionActivity.Challenge,
 		&sessionActivity.Answer,
+		&sessionActivity.Input,
 		&sessionActivity.Result,
 		&sessionActivity.Score,
 		&sessionActivity.CreatedAt,
@@ -78,7 +82,7 @@ func (r *SessionActivityRepository) GetByID(ctx context.Context, id int64) (*mod
 // ListBySessionID retrieves all session activities for a given session
 func (r *SessionActivityRepository) ListBySessionID(ctx context.Context, sessionID int64) ([]models.SessionActivity, error) {
 	query := `
-		SELECT id, session_id, activity_id, answer, result, score, created_at 
+		SELECT id, session_id, activity_id, challenge, answer, input, result, score, created_at 
 		FROM session_activities 
 		WHERE session_id = ? 
 		ORDER BY created_at
@@ -97,7 +101,9 @@ func (r *SessionActivityRepository) ListBySessionID(ctx context.Context, session
 			&sa.ID,
 			&sa.SessionID,
 			&sa.ActivityID,
+			&sa.Challenge,
 			&sa.Answer,
+			&sa.Input,
 			&sa.Result,
 			&sa.Score,
 			&sa.CreatedAt,
@@ -109,7 +115,7 @@ func (r *SessionActivityRepository) ListBySessionID(ctx context.Context, session
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating over session activities: %w", err)
+		return nil, fmt.Errorf("error iterating session activities: %w", err)
 	}
 
 	return sessionActivities, nil
@@ -119,12 +125,11 @@ func (r *SessionActivityRepository) ListBySessionID(ctx context.Context, session
 func (r *SessionActivityRepository) Update(ctx context.Context, sessionActivity *models.SessionActivity) error {
 	query := `
 		UPDATE session_activities 
-		SET answer = ?, result = ?, score = ? 
+		SET result = ?, score = ? 
 		WHERE id = ?
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
-		sessionActivity.Answer,
 		sessionActivity.Result,
 		sessionActivity.Score,
 		sessionActivity.ID,

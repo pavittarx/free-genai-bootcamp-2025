@@ -15,6 +15,12 @@ type Session struct {
 	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
 }
 
+// SessionWithActivities represents a session with its associated activities
+type SessionWithActivities struct {
+	Session
+	Activities []SessionActivity `json:"activities"`
+}
+
 // Validate performs validation checks on the Session struct
 func (s *Session) Validate() error {
 	// Validate required fields

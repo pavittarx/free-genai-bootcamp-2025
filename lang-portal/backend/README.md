@@ -177,10 +177,18 @@ erDiagram
     - lists session details including its study activities
     - no pagination is required.
 
+- [DELETE] /api/sessions/
+    - this should delete all sessions
+    - this should also delete all session_activities associated with the sessions
+
 ## Documentation
 - Avoid Littering the codebase with comments. 
 - Modify the swagger doc with endpoint changes
 - The swagge doc should exactly match the API
 - No versioning is required, and should not be used in the API
 - All APIs are prefix with /api, documentation should be also follow same
-- Swagger UI should be updated after api documentation changes
+- Swagger UI should be updated after api documentation 
+- There is always only a single user, no authentication/authorisation is required
+- Parameters will be in url/query for GET requests
+- Parameters will be in url/query for  requests
+- Keep parameters in body for POST/PUT requests
