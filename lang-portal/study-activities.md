@@ -61,21 +61,6 @@ This plan outlines the comprehensive strategy for developing and implementing st
   - Perfect match bonus: +20 points
   - Time-based scoring
 
-### 3. Sentence Constructor
-- **Objective**: Improve grammar and sentence formation skills
-- **Mechanics**:
-  - Provide a set of words
-  - User must construct a grammatically correct sentence
-  - Support for multiple languages (Hindi, English)
-- **Difficulty Levels**:
-  - Easy: Simple subject-verb-object sentences
-  - Medium: Sentences with adjectives and adverbs
-  - Hard: Complex sentences with multiple clauses
-- **Scoring**:
-  - Grammatically correct sentence: +15 points
-  - Contextually appropriate sentence: +10 bonus points
-  - Complexity bonus
-
 ## Implementation Guidelines for Study Activities
 
 ### Core Principles
@@ -171,20 +156,41 @@ This plan outlines the comprehensive strategy for developing and implementing st
 - Styling: Tailwind CSS
 
 Guides to Build Study Activities
-- There should be option to skip the challenge and move to the next challenge.
 - Study Activities need to be their own interactive mini apps.
 - Study Activities should launch as a popup on the current page.
-- Study Activities will create a session on start
-- Study Activities will end the session on end
-- Study Activities will have a score based on the answers given.
-- The scoring mechanism is provided in the prompt.
-- The score to be given on correct answer is also stored in the database.
-- All the answers and challenges are stored in the database.
-- The session for the study activity is stored in the session table.
-- The challenged is stored in session_activity table.
-- If any study activity session is closed in between, last answer's time should be taken as the end time of the session.
-- If any study activity session is closed in between, a new session should be created for the next challenge.
-- The study activity session should be interactive, mimicing a game like enviornment and UI.
-- On challenge completion, the user is back on study activity page.
 - The popup should come as an overlay centered on the screen, 
 - The popup should close if the user navigates to other pages
+- The scoring mechanism is provided with the activity.
+
+- Study Activities will create a session on start
+- A session consists of a single run of the activity,
+- A session activity is the challenge user answers within the acitivity. 
+- Sessions and Session activities are saved via the API.
+
+- Each challenge is scored based on the input that is provided.
+- The score are saved via the means of session activity API. 
+- There should be option to skip the challenge and move to the next challenge.
+- Activity should end after final challenge.
+- Final score should be displayed at the end of the activity.
+
+- Session ends at the end of study activity.
+- Final Score of the session is prepared based on all the scores in the session. 
+
+- Last challenge is marked as end of study activity, if the activity is closed. 
+- A new session is created each time the user launches the study activity. 
+- The study activity session should be interactive, mimicing a game like enviornment and UI.
+- On challenge completion, the user is back on study activity page.
+
+## API Integration and Endpoints
+- Random words are fetched from `/api/words/random`
+- Session is started with a POST request to the API `/api/session`
+  - include activity_id in the body
+- Each challenge in the study activity is saved using POST request on `/api/session-activity`
+  - the session activity has following paramters
+  - current challenge word passed as a string
+  - current challenge answer passed as a string
+  - what did the user input as a string
+  - the score of the user on this attempt
+- The challenge ends with PUT request on `/api/session` 
+  - the body provides the overall final score of the challenge
+- All the session and session activity related data can be found via GET request on `/api/sessions/:id` with session id passes as id.
