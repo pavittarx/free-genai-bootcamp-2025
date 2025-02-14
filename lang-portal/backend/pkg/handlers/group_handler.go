@@ -25,16 +25,6 @@ func NewGroupHandler(service *services.GroupService, repo *repository.SQLiteGrou
 	}
 }
 
-// CreateGroup handles the creation of a new group
-
-
-
-
-
-
-
-
-
 func (h *GroupHandler) CreateGroup(c echo.Context) error {
 	group := &models.Group{}
 	if err := c.Bind(group); err != nil {
@@ -46,20 +36,12 @@ func (h *GroupHandler) CreateGroup(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
-		"group": group,
+		"group":       group,
 		"description": group.Description,
 	})
 }
 
 // GetGroupByID retrieves a group by its ID
-
-
-
-
-
-
-
-
 
 func (h *GroupHandler) GetGroupByID(c echo.Context) error {
 	idStr := c.Param("id")
@@ -74,22 +56,12 @@ func (h *GroupHandler) GetGroupByID(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"group": group,
+		"group":       group,
 		"description": group.Description,
 	})
 }
 
 // UpdateGroup updates an existing group
-
-
-
-
-
-
-
-
-
-
 
 func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 	idStr := c.Param("id")
@@ -112,20 +84,12 @@ func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"group": group,
+		"group":       group,
 		"description": group.Description,
 	})
 }
 
 // DeleteGroup removes a group by its ID
-
-
-
-
-
-
-
-
 
 func (h *GroupHandler) DeleteGroup(c echo.Context) error {
 	idStr := c.Param("id")
@@ -143,15 +107,6 @@ func (h *GroupHandler) DeleteGroup(c echo.Context) error {
 
 // ListGroups retrieves a list of groups
 
-
-
-
-
-
-
-
-
-
 func (h *GroupHandler) ListGroups(c echo.Context) error {
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	pageSize, _ := strconv.Atoi(c.QueryParam("pageSize"))
@@ -165,7 +120,7 @@ func (h *GroupHandler) ListGroups(c echo.Context) error {
 	var groupResponses []map[string]interface{}
 	for _, group := range groups {
 		groupResponses = append(groupResponses, map[string]interface{}{
-			"group": group,
+			"group":       group,
 			"description": group.Description,
 		})
 	}
@@ -173,5 +128,34 @@ func (h *GroupHandler) ListGroups(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"groups": groupResponses,
 		"total":  total,
+	})
+}
+
+// GetGroups retrieves a list of all groups
+func (h *GroupHandler) GetGroups(c echo.Context) error {
+	// Parse pagination parameters
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("pageSize"))
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	// Retrieve groups with pagination
+	groups, total, err := h.groupService.GetGroups(c.Request().Context(), page, pageSize)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve groups",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"groups":   groups,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
 	})
 }

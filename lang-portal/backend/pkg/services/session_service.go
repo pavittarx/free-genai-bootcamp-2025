@@ -19,22 +19,16 @@ func NewSessionService(repo *repository.SessionRepository) *SessionService {
 }
 
 // CreateSession starts a new learning session
-func (s *SessionService) CreateSession(ctx context.Context, activityID int64, groupID *int64) (*models.Session, error) {
+func (s *SessionService) CreateSession(ctx context.Context, activityID int64) (*models.Session, error) {
+	// Create a new session with the current time as start_time
 	session := &models.Session{
 		ActivityID: activityID,
-		GroupID:    groupID,
 		StartTime:  time.Now(),
-		Score:      0,
-		CreatedAt:  time.Now(),
 	}
 
-	// Validate the session
-	if err := session.Validate(); err != nil {
-		return nil, err
-	}
-
-	// Create the session in the repository
-	if err := s.repo.Create(ctx, session); err != nil {
+	// Save the session to the database
+	err := s.repo.Create(ctx, session)
+	if err != nil {
 		return nil, err
 	}
 

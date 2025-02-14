@@ -20,8 +20,7 @@ func NewSessionHandler(service *services.SessionService) *SessionHandler {
 
 // CreateSessionRequest defines the request payload for creating a session
 type CreateSessionRequest struct {
-	ActivityID int64  `json:"activity_id" validate:"required"`
-	GroupID    *int64 `json:"group_id,omitempty"`
+	ActivityID int64 `json:"activity_id" validate:"required"`
 }
 
 // UpdateSessionRequest defines the request payload for updating a session
@@ -30,15 +29,6 @@ type UpdateSessionRequest struct {
 }
 
 // CreateSession handles the creation of a new session
-
-
-
-
-
-
-
-
-
 
 func (h *SessionHandler) CreateSession(c echo.Context) error {
 	var req CreateSessionRequest
@@ -55,8 +45,8 @@ func (h *SessionHandler) CreateSession(c echo.Context) error {
 		})
 	}
 
-	// Create session
-	session, err := h.service.CreateSession(c.Request().Context(), req.ActivityID, req.GroupID)
+	// Create session with automatic start_time
+	session, err := h.service.CreateSession(c.Request().Context(), req.ActivityID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to create session",
@@ -67,14 +57,6 @@ func (h *SessionHandler) CreateSession(c echo.Context) error {
 }
 
 // GetSessionByID retrieves a specific session
-
-
-
-
-
-
-
-
 
 func (h *SessionHandler) GetSessionByID(c echo.Context) error {
 	// Parse session ID from URL parameter
@@ -98,14 +80,6 @@ func (h *SessionHandler) GetSessionByID(c echo.Context) error {
 }
 
 // GetSessions retrieves a list of sessions with pagination
-
-
-
-
-
-
-
-
 
 func (h *SessionHandler) GetSessions(c echo.Context) error {
 	// Parse pagination parameters
@@ -131,16 +105,6 @@ func (h *SessionHandler) GetSessions(c echo.Context) error {
 }
 
 // UpdateSession handles updating a session (e.g., ending a session)
-
-
-
-
-
-
-
-
-
-
 
 func (h *SessionHandler) UpdateSession(c echo.Context) error {
 	// Parse session ID from URL parameter
@@ -170,14 +134,6 @@ func (h *SessionHandler) UpdateSession(c echo.Context) error {
 }
 
 // DeleteSession handles session deletion
-
-
-
-
-
-
-
-
 
 func (h *SessionHandler) DeleteSession(c echo.Context) error {
 	// Parse session ID from URL parameter

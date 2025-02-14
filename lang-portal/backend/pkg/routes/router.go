@@ -28,32 +28,24 @@ func RegisterRoutes(e *echo.Echo,
 		})
 	})
 
-	// Register word routes
-	e.GET("/api/words", wordHandler.ListWords)
-	e.GET("/api/words/:id", wordHandler.GetWordByID)
-	e.GET("/api/words/random", wordHandler.GetRandomWord)
-	e.POST("/api/words", wordHandler.CreateWord)
-	e.PUT("/api/words/:id", wordHandler.UpdateWord)
-	e.DELETE("/api/words/:id", wordHandler.DeleteWord)
+	// Words routes
+	e.GET("/api/words", wordHandler.GetWords)
+	e.GET("/api/words/random", wordHandler.GetRandomWordFiltered)
+	e.GET("/api/words/search", wordHandler.SearchWordsTerm)
 
-	// Register group routes
-	e.GET("/api/groups", groupHandler.ListGroups)
-	e.GET("/api/groups/:id", groupHandler.GetGroupByID)
-	e.GET("/api/words/groups/:group-id", wordHandler.GetWordsByGroupID)
+	// Groups routes
+	e.GET("/api/groups", groupHandler.GetGroups)
+	e.GET("/api/words/groups/:group-id", wordHandler.GetWordsByGroup)
 
-	// Register study activities routes
+	// Study Activities routes
 	e.GET("/api/study-activities", studyActivityHandler.GetStudyActivities)
 
 	// Session routes
+	e.POST("/api/sessions", sessionHandler.CreateSession)
+	e.PUT("/api/sessions", sessionHandler.UpdateSession)
 	e.GET("/api/sessions", sessionHandler.GetSessions)
 	e.GET("/api/sessions/:id", sessionHandler.GetSessionByID)
-	e.POST("/api/sessions", sessionHandler.CreateSession)
-	e.PUT("/api/sessions/:id", sessionHandler.UpdateSession)
-	e.DELETE("/api/sessions/:id", sessionHandler.DeleteSession)
 
 	// Session Activity routes
-	e.POST("/api/sessions/:session_id/activities", sessionActivityHandler.AddSessionActivity)
-	e.GET("/api/sessions/:session_id/activities", sessionActivityHandler.GetSessionActivities)
-	e.PUT("/api/session-activities/:id", sessionActivityHandler.EvaluateSessionActivity)
-	e.DELETE("/api/session-activities/:id", sessionActivityHandler.DeleteSessionActivity)
+	e.POST("/api/session-activity", sessionActivityHandler.AddSessionActivity)
 }

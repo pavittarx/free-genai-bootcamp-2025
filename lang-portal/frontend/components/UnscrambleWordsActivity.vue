@@ -18,7 +18,7 @@
         <h3 class="text-xl font-semibold text-gray-800 mb-2">कोई चुनौती उपलब्ध नहीं</h3>
         <p class="text-gray-600 mb-4">वर्तमान में कोई चुनौती नहीं मिल रही</p>
         <button 
-          @click="refetch"
+          @click="handleRefetch"
           class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
         >
           फिर से प्रयास करें (Try Again)
@@ -139,12 +139,15 @@ interface FeedbackMessage {
   text: string
 }
 
-const props = defineProps({
-  activityId: {
-    type: String,
-    required: true
-  }
-})
+interface ScrambledLetter {
+  value: string
+  selected: boolean
+  originalIndex: number
+}
+
+const props = defineProps<{
+  activityId: string
+}>()
 
 const popupControl = inject('popupControl', {
   close: () => {}
@@ -160,7 +163,7 @@ const {
   isLoading, 
   error,
   refetch 
-} = useQuery({
+} = useQuery<Challenge[]>({
   queryKey: ['unscrambleWordChallenges', props.activityId],
   queryFn: async () => {
     try {
@@ -180,7 +183,7 @@ const {
       console.log('Received challenges:', data)
       
       // Ensure we have at least 10 challenges
-      const processedChallenges = data.slice(0, 10).map(challenge => ({
+      const processedChallenges = data.slice(0, 10).map((challenge: Challenge) => ({
         ...challenge,
         scrambledWord: challenge.word.split('').sort(() => Math.random() - 0.5).join('')
       }))
@@ -195,7 +198,7 @@ const {
       console.error('Error in challenge fetch:', err)
       
       // Fallback challenges if API fails
-      const fallbackChallenges = [
+      const fallbackChallenges: Challenge[] = [
         { id: '1', word: 'नमस्ते', scrambledWord: 'तेमनास', translation: 'Hello' },
         { id: '2', word: 'भारत', scrambledWord: 'तभारा', translation: 'India' },
         { id: '3', word: 'प्यार', scrambledWord: 'रापय', translation: 'Love' },
@@ -227,7 +230,7 @@ const currentChallenge = computed(() =>
   challenges.value && challenges.value[currentChallengeIndex.value]
 )
 
-const scrambledLetters = computed(() => 
+const scrambledLetters = computed<ScrambledLetter[]>(() => 
   currentChallenge.value?.scrambledWord.split('').map((letter, index) => ({
     value: letter,
     selected: false,
@@ -247,7 +250,7 @@ const removeLetter = (index: number) => {
   userAnswer.value.splice(index, 1)
   
   const originalIndex = scrambledLetters.value.findIndex(
-    l => l.value === letter && l.selected
+    (l: ScrambledLetter) => l.value === letter && l.selected
   )
   if (originalIndex !== -1) {
     scrambledLetters.value[originalIndex].selected = false
@@ -256,7 +259,7 @@ const removeLetter = (index: number) => {
 
 const resetChallenge = () => {
   userAnswer.value = []
-  scrambledLetters.value.forEach(letter => letter.selected = false)
+  scrambledLetters.value.forEach((letter: ScrambledLetter) => letter.selected = false)
   feedbackMessage.value = null
 }
 
@@ -286,6 +289,11 @@ const checkAnswer = () => {
       popupControl.close()
     }
   }, 1000)
+}
+
+// Simplified refetch method
+const handleRefetch = () => {
+  refetch()
 }
 </script>
 

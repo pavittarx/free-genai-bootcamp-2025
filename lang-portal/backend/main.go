@@ -19,10 +19,6 @@ import (
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
 	"github.com/pavittarx/lang-portal/backend/pkg/routes"
 	"github.com/pavittarx/lang-portal/backend/pkg/services"
-
-	// Swagger
-	_ "github.com/pavittarx/lang-portal/backend/docs" // Swagger generated docs
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 const (
@@ -44,9 +40,6 @@ func main() {
 	e := echo.New()
 	setupMiddleware(e)
 	setupRoutes(e, db, sugar)
-
-	// Swagger route
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	server := createServer(e)
 	startServer(server, e, sugar)

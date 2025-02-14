@@ -66,7 +66,7 @@ import StudyActivityPopup from '~/components/StudyActivityPopup.vue'
 import UnscrambleWordsActivity from '~/components/UnscrambleWordsActivity.vue'
 
 interface StudyActivity {
-  id: number
+  id: string
   name: string
   description: string
   image: string
@@ -124,14 +124,15 @@ const getActivityComponent = (activityName: string) => {
   const componentMap = {
     'Unscramble Words': UnscrambleWordsActivity,
     // Add other activity components as they are created
-  }
-  return componentMap[activityName] || null
+  } as const
+
+  return componentMap[activityName as keyof typeof componentMap] || null
 }
 
 const launchActivity = (activity: StudyActivity) => {
   selectedActivity.value = activity
-  if (activityPopup.value) {
-    activityPopup.value.open()
+  if (activityPopup.value && 'open' in activityPopup.value) {
+    (activityPopup.value as { open: () => void }).open()
   }
 }
 
