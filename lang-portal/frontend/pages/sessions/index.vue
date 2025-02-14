@@ -2,73 +2,152 @@
   <PageLayout :is-loading="isLoading" :error="error" :on-retry="refetch">
     <template #title>Learning Sessions</template>
 
-    <div v-if="sessions && sessions.length" class="space-y-4">
-      <div v-for="session in sessions" :key="session.id"
-        class="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer">
-        <div class="p-6 flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <span class="text-xl">⏱️</span>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-gray-800">{{ session.name }}</h3>
-              <p class="text-sm text-gray-600">
-                {{ formatDate(session.startTime) }} |
-                Duration: {{ formatDuration(session.duration) }}
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-4">
-            <span class="text-sm px-3 py-1 rounded-full" :class="getStatusClass(session.status)">
-              {{ session.status }}
-            </span>
-            <NuxtLink :to="`/sessions/${session.id}`" class="text-blue-500 hover:text-blue-700 text-sm font-medium">
-              View Details →
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50 border-b">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Session ID
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Activity
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Start Time
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Score
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr 
+            v-for="session in enrichedSessions" 
+            :key="session.id" 
+            class="hover:bg-gray-50 transition-colors"
+          >
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ session.id }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ session.activityName || 'Unknown Activity' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ formatDate(session.start_time) }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{ session.score }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span 
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                :class="getStatusClass(session.status)"
+              >
+                {{ session.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <NuxtLink 
+                :to="`/sessions/${session.id}`" 
+                class="text-blue-600 hover:text-blue-900"
+              >
+                View Details
+              </NuxtLink>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div v-else class="text-center py-16 bg-white rounded-xl shadow-md">
-      <div class="mb-4 text-6xl">🕰️</div>
-      <h2 class="text-xl font-semibold text-gray-700 mb-2">No Learning Sessions</h2>
-      <p class="text-gray-500">Start tracking your learning progress by beginning a new session!</p>
+      <div v-if="!enrichedSessions || enrichedSessions.length === 0" class="text-center py-12">
+        <div class="text-6xl mb-4">🕰️</div>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">No Learning Sessions</h2>
+        <p class="text-gray-500">Start tracking your learning progress by beginning a new session!</p>
+      </div>
     </div>
   </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { useRouter } from 'vue-router'
 import PageLayout from '~/components/common/PageLayout.vue'
 
-interface LearningSession {
+interface StudyActivity {
   id: number
   name: string
-  startTime: string
-  duration: number
+}
+
+interface Session {
+  id: number
+  activity_id: number
+  start_time: string
+  score: number
   status: 'Completed' | 'In Progress' | 'Not Started'
 }
 
-const router = useRouter()
+interface EnrichedSession extends Session {
+  activityName?: string
+}
 
-const {
-  data: sessions,
-  isLoading,
-  error,
-  refetch
+const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:3000'
+
+const { 
+  data: sessions, 
+  isLoading: isSessionsLoading, 
+  error: sessionsError 
 } = useQuery({
   queryKey: ['sessions'],
   queryFn: async () => {
-    const response = await fetch('/api/sessions')
+    const response = await fetch(`${baseUrl}/api/sessions`)
     if (!response.ok) {
       throw new Error('Failed to fetch learning sessions')
     }
     return response.json()
   }
 })
+
+const { 
+  data: studyActivities, 
+  isLoading: isActivitiesLoading, 
+  error: activitiesError 
+} = useQuery({
+  queryKey: ['study-activities'],
+  queryFn: async () => {
+    const response = await fetch(`${baseUrl}/api/study-activities`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch study activities')
+    }
+    return response.json()
+  }
+})
+
+const enrichedSessions = computed<EnrichedSession[]>(() => {
+  if (!sessions.value || !studyActivities.value) return []
+
+  return sessions.value.map(session => {
+    const activity = studyActivities.value.find(
+      (activity: StudyActivity) => activity.id === session.activity_id
+    )
+    return {
+      ...session,
+      activityName: activity ? activity.name : undefined
+    }
+  })
+})
+
+const isLoading = computed(() => isSessionsLoading.value || isActivitiesLoading.value)
+const error = computed(() => sessionsError.value || activitiesError.value)
+
+const refetch = () => {
+  sessions.value
+  studyActivities.value
+}
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -80,14 +159,6 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const formatDuration = (minutes: number) => {
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
-  return hours > 0
-    ? `${hours}h ${remainingMinutes}m`
-    : `${minutes}m`
-}
-
 const getStatusClass = (status: string) => {
   switch (status) {
     case 'Completed': return 'bg-green-100 text-green-800'
@@ -96,6 +167,4 @@ const getStatusClass = (status: string) => {
     default: return 'bg-gray-100 text-gray-800'
   }
 }
-
-// Removed startNewSession method as sessions are created from study activities
 </script>
