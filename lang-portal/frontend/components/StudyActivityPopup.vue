@@ -2,10 +2,10 @@
   <Teleport to="body">
     <div 
       v-if="isOpen" 
-      class="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent pointer-events-none"
+      class="fixed inset-0 z-[9999] flex items-center justify-center"
     >
       <div 
-        class="relative w-[90vw] max-w-[1200px] h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden pointer-events-auto animate-popup-enter flex"
+        class="relative w-[90vw] max-w-[1200px] h-[80vh] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-popup-enter flex"
       >
         <button 
           @click="endSession"
@@ -17,7 +17,12 @@
         </button>
 
         <div v-if="!isFinished" class="flex-grow overflow-y-auto p-6">
-          <slot></slot>
+          <slot>
+            <UnscrambleWordsActivity 
+              :activityId="activityId" 
+              @complete="onActivityComplete"
+            />
+          </slot>
         </div>
 
         <div v-else class="flex-grow flex items-center justify-center flex-col p-6">
@@ -38,11 +43,16 @@
 <script setup lang="ts">
 import { ref, provide, watch, computed, defineEmits, defineExpose } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import UnscrambleWordsActivity from './UnscrambleWordsActivity.vue'
 
 const props = defineProps({
   initiallyOpen: {
     type: Boolean,
     default: false
+  },
+  activityId: {
+    type: Number,
+    required: true
   }
 })
 
@@ -62,11 +72,11 @@ const open = () => {
 
 const close = () => {
   isOpen.value = false
+  emit('close')
 }
 
 const finish = () => {
   isFinished.value = true
-  sessionScore.value = calculateFinalScore()
   emit('finish', sessionScore.value)
 }
 
@@ -75,9 +85,13 @@ const endSession = () => {
   close()
 }
 
+const onActivityComplete = (score: number) => {
+  sessionScore.value = score
+  finish()
+}
+
 const calculateFinalScore = () => {
   // Placeholder for final score calculation
-  // This should be replaced with actual scoring logic
   return Math.floor(Math.random() * 100)
 }
 

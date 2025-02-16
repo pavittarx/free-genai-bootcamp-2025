@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 
 const API_BASE_URL = 'http://localhost:3000/api'
 
@@ -13,7 +13,7 @@ export interface Word {
 
 export interface Session {
   id: number
-  activity_id: string
+  activity_id: number
   start_time: string
   end_time?: string
   score: number
@@ -38,7 +38,7 @@ const api = axios.create({
 
 export const apiService = {
   // Session Management
-  async createSession(activity_id: string): Promise<Session> {
+  async createSession(activity_id: number): Promise<Session> {
     console.log('Attempting to create session', {
       activityId: activity_id,
       activityIdType: typeof activity_id,
@@ -49,42 +49,62 @@ export const apiService = {
     // Validate input
     if (!activity_id) {
       const error = new Error('Activity ID is required')
-      console.error('Session creation validation error:', error)
+      error.name = 'ValidationError'
       throw error
     }
 
     try {
-      return api.post('/sessions', { 
-        activity_id: activity_id 
-      }).then(response => {
-        console.log('Session creation response details:', {
-          status: response.status,
-          headers: response.headers,
-          data: response.data,
-          dataType: typeof response.data
+      const response = await api.post<Session>('/sessions', { activity_id })
+      console.log('Session creation response details:', {
+        status: response.status,
+        headers: response.headers,
+        data: response.data,
+        dataType: typeof response.data
+      })
+
+      // Validate response
+      if (!response.data) {
+        throw new Error('No session data returned')
+      }
+
+      // Validate session structure
+      const session = response.data as Session
+      if (!session.id || !session.activity_id) {
+        throw new Error('Invalid session structure')
+      }
+
+      return session
+    } catch (error: unknown) {
+      // Type-safe error handling
+      if (axios.isAxiosError(error)) {
+        // Axios-specific error handling
+        console.error('Detailed Axios session creation error:', {
+          message: error.message,
+          code: error.code,
+          response: error.response?.data,
+          status: error.response?.status
         })
 
-        // Validate response
-        if (!response.data) {
-          throw new Error('No session data returned')
+        // Throw a more specific error based on Axios error
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          throw new Error(`Session creation failed: ${error.response.status} - ${error.response.data}`)
+        } else if (error.request) {
+          // The request was made but no response was received
+          throw new Error('No response received from server')
+        } else {
+          // Something happened in setting up the request
+          throw new Error(`Request setup error: ${error.message}`)
         }
-
-        // Validate session structure
-        const session = response.data as Session
-        if (!session.id || !session.activity_id) {
-          throw new Error('Invalid session structure')
-        }
-
-        return session
-      })
-    } catch (error: any) {
-      console.error('Detailed session creation error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers
-      })
-      throw error
+      } else if (error instanceof Error) {
+        // Standard Error instance
+        console.error('Standard error during session creation:', error.message)
+        throw error
+      } else {
+        // Unknown error type
+        console.error('Unknown error during session creation:', error)
+        throw new Error('An unknown error occurred during session creation')
+      }
     }
   },
 

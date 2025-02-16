@@ -1,150 +1,146 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-    <div class="bg-gradient-to-br from-blue-100 to-blue-300 w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden">
-      <div class="p-8 flex flex-col min-h-[600px]">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-bold text-gray-800">शब्द उलझाओ (Unscramble Words)</h2>
-          <p class="text-gray-600">अक्षरों को सही क्रम में व्यवस्थित करें</p>
+  <div class="w-full h-full flex flex-col">
+    <div class="text-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">शब्द उलझाओ (Unscramble Words)</h2>
+      <p class="text-gray-600">अक्षरों को सही क्रम में व्यवस्थित करें</p>
+    </div>
+
+    <div v-if="isLoading" class="flex-grow flex items-center justify-center">
+      <div class="text-center">
+        <div class="animate-pulse text-6xl mb-4">🧩</div>
+        <p class="text-gray-600">चुनौतियाँ लोड हो रही हैं... (Loading challenges)</p>
+        <p class="text-sm text-gray-500">
+          चुनौती: {{ currentChallengeIndex + 1 }} / 10
+        </p>
+      </div>
+    </div>
+
+    <div v-else-if="error" class="flex-grow flex items-center justify-center">
+      <div class="text-center">
+        <div class="text-6xl mb-4">😕</div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">लोड करने में त्रुटि</h3>
+        <p class="text-gray-600 mb-4">{{ errorMessage }}</p>
+      </div>
+    </div>
+
+    <div v-else-if="activityCompleted" class="flex-grow flex items-center justify-center">
+      <div class="text-center">
+        <div class="text-6xl mb-4">🏆</div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+          गतिविधि पूरी हुई (Activity Completed)
+        </h3>
+        <p class="text-2xl font-bold text-green-600 mb-4">
+          आपका कुल स्कोर (Total Score): {{ score }} / 50
+        </p>
+        <div class="flex justify-center space-x-4">
+          <button 
+            @click="handleActivityEnd"
+            class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+          >
+            समाप्त करें (Close)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="currentChallenge" class="flex-grow flex flex-col justify-between">
+      <div class="space-y-6">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex space-x-2">
+            <span class="text-sm font-medium text-gray-600">चुनौती (Challenge):</span>
+            <span class="text-sm font-semibold text-blue-600">
+              {{ currentChallengeIndex + 1 }} / 10
+            </span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-600">स्कोर (Score):</span>
+            <span class="text-sm font-semibold text-green-600">{{ score }}</span>
+          </div>
         </div>
 
-        <div v-if="isLoading" class="flex-grow flex items-center justify-center">
-          <div class="text-center">
-            <div class="animate-pulse text-6xl mb-4">🧩</div>
-            <p class="text-gray-600">चुनौतियाँ लोड हो रही हैं... (Loading challenges)</p>
-            <p class="text-sm text-gray-500">
-              चुनौती: {{ currentChallengeIndex + 1 }} / 10
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 rounded-lg p-4 shadow-inner">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                उलझे हुए शब्द (Scrambled Word)
+              </h3>
+              <div class="flex justify-center space-x-2 mb-4">
+                <div 
+                  v-for="(letter, index) in currentChallenge.scrambledWord.split('')" 
+                  :key="index"
+                  @click="selectLetter(index)"
+                  class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl font-bold text-blue-800 cursor-pointer hover:bg-blue-200 transition"
+                >
+                  {{ letter }}
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 rounded-lg p-4 shadow-inner">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                आपका उत्तर (Your Answer)
+              </h3>
+              <div class="flex justify-center space-x-2 mb-4">
+                <div 
+                  v-for="(letter, index) in userInput" 
+                  :key="index"
+                  @click="removeLetter(index)"
+                  class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl font-bold text-green-800 cursor-pointer hover:bg-green-200 transition"
+                >
+                  {{ letter }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 text-center">
+                        
+            <p class="text-lg text-gray-600">
+              अंग्रेजी (English): {{ currentWord?.english || '' }}
             </p>
           </div>
         </div>
 
-        <div v-else-if="error" class="flex-grow flex items-center justify-center">
-          <div class="text-center">
-            <div class="text-6xl mb-4">😕</div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">लोड करने में त्रुटि</h3>
-            <p class="text-gray-600 mb-4">{{ errorMessage }}</p>
-          </div>
+        <div v-if="feedbackMessage" class="text-center">
+          <p 
+            :class="{
+              'text-green-600': feedbackMessage.type === 'success',
+              'text-red-600': feedbackMessage.type === 'error'
+            }"
+          >
+            {{ feedbackMessage.text }}
+          </p>
         </div>
+      </div>
 
-        <div v-else-if="activityCompleted" class="flex-grow flex items-center justify-center">
-          <div class="text-center">
-            <div class="text-6xl mb-4">🏆</div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">
-              गतिविधि पूरी हुई (Activity Completed)
-            </h3>
-            <p class="text-2xl font-bold text-green-600 mb-4">
-              आपका कुल स्कोर (Total Score): {{ score }} / 50
-            </p>
-            <div class="flex justify-center space-x-4">
-              <button 
-                @click="handleActivityEnd"
-                class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
-              >
-                समाप्त करें (Close)
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div v-else-if="currentChallenge" class="flex-grow flex flex-col justify-between">
-          <div class="space-y-6">
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex space-x-2">
-                <span class="text-sm font-medium text-gray-600">चुनौती (Challenge):</span>
-                <span class="text-sm font-semibold text-blue-600">
-                  {{ currentChallengeIndex + 1 }} / 10
-                </span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="text-sm font-medium text-gray-600">स्कोर (Score):</span>
-                <span class="text-sm font-semibold text-green-600">{{ score }}</span>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-md p-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-blue-50 rounded-lg p-4 shadow-inner">
-                  <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                    उलझे हुए शब्द (Scrambled Word)
-                  </h3>
-                  <div class="flex justify-center space-x-2 mb-4">
-                    <div 
-                      v-for="(letter, index) in currentChallenge.scrambledWord.split('')" 
-                      :key="index"
-                      @click="selectLetter(index)"
-                      class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl font-bold text-blue-800 cursor-pointer hover:bg-blue-200 transition"
-                    >
-                      {{ letter }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bg-green-50 rounded-lg p-4 shadow-inner">
-                  <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                    आपका उत्तर (Your Answer)
-                  </h3>
-                  <div class="flex justify-center space-x-2 mb-4">
-                    <div 
-                      v-for="(letter, index) in userInput" 
-                      :key="index"
-                      @click="removeLetter(index)"
-                      class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl font-bold text-green-800 cursor-pointer hover:bg-green-200 transition"
-                    >
-                      {{ letter }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-4 text-center">
-                            
-                <p class="text-lg text-gray-600">
-                  अंग्रेजी (English): {{ currentWord?.english || '' }}
-                </p>
-              </div>
-            </div>
-
-            <div v-if="feedbackMessage" class="text-center">
-              <p 
-                :class="{
-                  'text-green-600': feedbackMessage.type === 'success',
-                  'text-red-600': feedbackMessage.type === 'error'
-                }"
-              >
-                {{ feedbackMessage.text }}
-              </p>
-            </div>
-          </div>
-
-          <div class="mt-6 flex justify-center space-x-4">
-            <button 
-              @click="checkAnswer"
-              class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              :disabled="userInput.length !== currentChallenge.scrambledWord.length"
-            >
-              उत्तर जमा करें (Submit Answer)
-            </button>
-            <button 
-              @click="skipChallenge"
-              class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition"
-            >
-              छोड़ें (Skip)
-            </button>
-          </div>
-        </div>
+      <div class="mt-6 flex justify-center space-x-4">
+        <button 
+          @click="checkAnswer"
+          class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+          :disabled="userInput.length !== currentChallenge.scrambledWord.length"
+        >
+          उत्तर जमा करें (Submit Answer)
+        </button>
+        <button 
+          @click="skipChallenge"
+          class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition"
+        >
+          छोड़ें (Skip)
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted, watch } from 'vue'
+import { ref, computed, inject, onMounted, watch, defineEmits } from 'vue'
 import { useQuery, type UseQueryOptions } from '@tanstack/vue-query'
 import { apiService, type Word, type Session } from '~/services/api'
 import axios from 'axios'
 
 // Props definition
 const props = defineProps<{
-  activityId: string | number
+  activityId: number
 }>()
 
 // State management
@@ -240,9 +236,6 @@ const removeLetter = (index: number) => {
 // Answer checking method
 const checkAnswer = async () => {
   try {
-    // Convert activityId to number
-    const activityIdNumber = Number(props.activityId)
-    
     // Combine user input
     const userAnswer = userInput.value.join('')
     
@@ -275,7 +268,7 @@ const checkAnswer = async () => {
     // Save session activity
     await apiService.submitActivity({
       session_id: session.value?.id || 0,
-      activity_id: activityIdNumber,
+      activity_id: Number(props.activityId), // Ensure numeric activity ID is used consistently
       challenge: currentChallenge.value?.word || '',
       answer: currentChallenge.value?.scrambledWord || '',
       input: userAnswer,
@@ -296,13 +289,10 @@ const checkAnswer = async () => {
 // Skip challenge method
 const skipChallenge = async () => {
   try {
-    // Convert activityId to number
-    const activityIdNumber = Number(props.activityId)
-    
     // Save skipped session activity
     await apiService.submitActivity({
       session_id: session.value?.id || 0,
-      activity_id: activityIdNumber,
+      activity_id: Number(props.activityId), // Ensure numeric activity ID is used consistently
       challenge: currentChallenge.value?.word || '',
       answer: currentChallenge.value?.scrambledWord || '',
       input: '',
@@ -347,13 +337,15 @@ const resetChallenge = async () => {
 
 // End activity method
 const endActivity = async () => {
+  activityCompleted.value = true
+  
+  // Emit complete event
+  emit('complete', score.value)
+  
   try {
     if (session.value) {
       // Close session with final score
       await apiService.closeSession(session.value.id, score.value)
-      
-      // Mark activity as completed
-      activityCompleted.value = true
     }
   } catch (error) {
     console.error('Error ending activity:', error)
@@ -364,7 +356,12 @@ const endActivity = async () => {
 const popupControl = inject<{ close?: () => void }>('popupControl', {})
 
 // Handle activity end
+const emit = defineEmits(['complete'])
 const handleActivityEnd = () => {
+  // Emit the complete event with the final score
+  emit('complete', score.value)
+  
+  // Call popup close method if available
   if (typeof popupControl.close === 'function') {
     popupControl.close()
   }
@@ -390,11 +387,8 @@ const handlePopupClose = async () => {
 // Initialize session on component mount
 onMounted(async () => {
   try {
-    // Convert activityId to number
-    const activityIdNumber = Number(props.activityId)
-    
     // Validate activity ID
-    if (isNaN(activityIdNumber) || activityIdNumber <= 0) {
+    if (!props.activityId || props.activityId <= 0) {
       throw new Error('Invalid activity ID')
     }
     
@@ -406,7 +400,7 @@ onMounted(async () => {
     feedbackMessage.value = null
     
     // Create session using numeric ID
-    session.value = await apiService.createSession(activityIdNumber)
+    session.value = await apiService.createSession(Number(props.activityId)) // Ensure numeric activity ID is used consistently
     
     if (!session.value || !session.value.id) {
       throw new Error('Failed to create session')
