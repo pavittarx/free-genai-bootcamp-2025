@@ -18,15 +18,17 @@
           <div class="text-center">
             <div class="text-6xl mb-4">😕</div>
             <h3 class="text-xl font-semibold text-gray-800 mb-2">लोड करने में त्रुटि</h3>
-            <p class="text-gray-600 mb-4">{{ error }}</p>
+            <p class="text-gray-600 mb-4">{{ errorMessage }}</p>
           </div>
         </div>
 
         <div v-else-if="activityCompleted" class="flex-grow flex items-center justify-center">
           <div class="text-center">
             <div class="text-6xl mb-4">🏆</div>
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">गतिविधि पूरी हुई</h3>
-            <p class="text-2xl font-bold text-green-600 mb-4">आपका कुल स्कोर: {{ score }} / 50</p>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">गतिविधि पूरी हुई (Activity Completed)</h3>
+            <p class="text-2xl font-bold text-green-600 mb-4">
+              आपका कुल स्कोर (Total Score): {{ score }} / 50
+            </p>
             <div class="flex justify-center space-x-4">
               <button 
                 @click="handleActivityEnd"
@@ -42,11 +44,13 @@
           <div class="space-y-6">
             <div class="flex justify-between items-center mb-4">
               <div class="flex space-x-2">
-                <span class="text-sm font-medium text-gray-600">चुनौती:</span>
-                <span class="text-sm font-semibold text-blue-600">{{ currentChallengeIndex + 1 }} / 10</span>
+                <span class="text-sm font-medium text-gray-600">चुनौती (Challenge):</span>
+                <span class="text-sm font-semibold text-blue-600">
+                  {{ currentChallengeIndex + 1 }} / 10
+                </span>
               </div>
               <div class="flex items-center space-x-2">
-                <span class="text-sm font-medium text-gray-600">स्कोर:</span>
+                <span class="text-sm font-medium text-gray-600">स्कोर (Score):</span>
                 <span class="text-sm font-semibold text-green-600">{{ score }}</span>
               </div>
             </div>
@@ -71,7 +75,7 @@
                   <h3 class="text-lg font-semibold text-gray-800 mb-2">आपका उत्तर (Your Answer)</h3>
                   <div class="flex justify-center space-x-2 mb-4">
                     <div 
-                      v-for="(letter, index) in userAnswer" 
+                      v-for="(letter, index) in userInput" 
                       :key="index"
                       @click="removeLetter(index)"
                       class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl font-bold text-green-800 cursor-pointer hover:bg-green-200 transition"
@@ -84,7 +88,13 @@
 
               <div class="mt-4 text-center">
                 <p class="text-xl font-semibold text-gray-800">
-                  मूल शब्द (Original Word): {{ currentChallenge.translation }}
+                  मूल शब्द (Original Word): {{ currentChallenge.word }}
+                </p>
+                <p class="text-lg text-gray-600">
+                  हिंग्लिश (Hinglish): {{ currentWord?.hinglish || '' }}
+                </p>
+                <p class="text-lg text-gray-600">
+                  अंग्रेजी (English): {{ currentWord?.english || '' }}
                 </p>
               </div>
             </div>
@@ -105,7 +115,7 @@
             <button 
               @click="checkAnswer"
               class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
-              :disabled="userAnswer.length !== currentChallenge.scrambledWord.length"
+              :disabled="userInput.length !== currentChallenge.scrambledWord.length"
             >
               उत्तर जमा करें (Submit Answer)
             </button>
@@ -124,16 +134,14 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted } from 'vue'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, type UseQueryOptions } from '@tanstack/vue-query'
 import { apiService, type Word, type Session } from '~/services/api'
+import axios from 'axios'
 
+// Props definition
 const props = defineProps<{
   activityId: string
 }>()
-
-const popupControl = inject('popupControl', {
-  close: () => {}
-})
 
 // Session and score management
 const session = ref<Session | null>(null)
@@ -143,100 +151,155 @@ const activityCompleted = ref(false)
 
 // Feedback and interaction state
 const feedbackMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
-const userAnswer = ref<string[]>([])
+const userInput = ref<string[]>([])
 
-// Initialize session on component mount
-onMounted(async () => {
-  try {
-    session.value = await apiService.createSession(props.activityId)
-    console.log('Session created:', session.value)
-  } catch (error) {
-    console.error('Failed to create session:', error)
-    feedbackMessage.value = {
-      type: 'error',
-      text: 'सत्र शुरू करने में त्रुटि (Error starting session)'
+// Custom type guard to ensure Word type
+function isWord(data: unknown): data is Word {
+  return (
+    typeof data === 'object' && 
+    data !== null && 
+    'id' in data &&
+    'hindi' in data &&
+    'scrambled' in data &&
+    'hinglish' in data &&
+    'english' in data
+  )
+}
+
+// Query options with explicit typing
+const queryOptions: UseQueryOptions<Word, Error> = {
+  queryKey: ['randomWord', currentChallengeIndex.value],
+  queryFn: async () => {
+    console.log('Fetching random word - Full details:', {
+      challengeIndex: currentChallengeIndex.value,
+      timestamp: new Date().toISOString()
+    })
+    
+    try {
+      const words = await apiService.getRandomWords(1)
+      
+      if (!Array.isArray(words) || words.length === 0) {
+        throw new Error('No words returned from server')
+      }
+      
+      const word = words[0]
+      if (!isWord(word)) {
+        throw new Error('Invalid word data')
+      }
+      
+      return word
+    } catch (error) {
+      console.error('Error fetching word:', error)
+      throw error
     }
+  },
+  enabled: currentChallengeIndex.value < 10, // Limit to 10 challenges
+  retry: 3,
+  retryDelay: 1000,
+  staleTime: 0
+}
+
+// Use query with explicit typing
+const { 
+  data: currentWord, 
+  refetch, 
+  isLoading, 
+  error, 
+  isError 
+} = useQuery<Word, Error>(queryOptions)
+
+// Computed property to get current challenge
+const currentChallenge = computed(() => {
+  const word = currentWord.value
+  if (!word) return null
+  return {
+    word: word.hindi,
+    scrambledWord: word.scrambled
   }
 })
 
-// Fetch challenges
-const { 
-  data: challenges, 
-  isLoading, 
-  error,
-  refetch 
-} = useQuery<(Word & { scrambledWord: string })[]>({
-  queryKey: ['unscrambleWordChallenges', props.activityId],
-  queryFn: async () => {
-    try {
-      const words = await apiService.getRandomWords(10)
-      
-      return words.map(word => ({
-        ...word,
-        scrambledWord: word.word.split('').sort(() => Math.random() - 0.5).join('')
-      }))
-    } catch (err) {
-      console.error('Challenge fetch error:', err)
-      throw err
-    }
-  },
-  staleTime: 1000 * 60 * 5, // 5 minutes
-  retry: 1,
-  refetchOnWindowFocus: false
+// Computed error message
+const errorMessage = computed(() => {
+  if (isError.value && error.value) {
+    return error.value.message || 'अज्ञात त्रुटि (Unknown error)'
+  }
+  return null
 })
 
-const currentChallenge = computed(() => 
-  challenges.value && challenges.value[currentChallengeIndex.value]
-)
+interface PopupControl {
+  close?: () => void
+}
+
+const popupControl = inject<PopupControl>('popupControl', {})
+
+const selectLetter = (index: number) => {
+  if (!currentChallenge.value) return
+  // Safely handle letter selection
+  const scrambledWord = currentChallenge.value.scrambledWord
+  const letter = scrambledWord[index]
+  if (letter && !userInput.value.includes(letter)) {
+    userInput.value.push(letter)
+  }
+}
 
 const checkAnswer = async () => {
-  if (!currentChallenge.value || !session.value) return
+  // Comprehensive null checks
+  if (!currentChallenge.value || !session.value || !currentWord.value) {
+    console.warn('Cannot check answer: missing data')
+    return
+  }
 
-  const userInput = userAnswer.value.join('')
+  const userInputValue = userInput.value.join('')
   const correctAnswer = currentChallenge.value.word
-  const isCorrect = userInput.toLowerCase() === correctAnswer.toLowerCase()
+  const isCorrect = userInputValue.toLowerCase() === correctAnswer.toLowerCase()
   const challengeScore = isCorrect ? 5 : 0
   
   try {
-    // Submit activity result
+    // Safely access properties with type guard
+    const word = currentWord.value
+    const hinglish = word?.hinglish || ''
+    const english = word?.english || ''
+
     await apiService.submitActivity({
       session_id: session.value.id,
       activity_id: props.activityId,
-      challenge: correctAnswer,
-      answer: correctAnswer,
-      input: userInput,
+      challenge: currentChallenge.value.word,
+      answer: userInputValue,
+      input: userInputValue,
       score: challengeScore
     })
 
-    // Update local score
-    if (isCorrect) {
-      score.value += challengeScore
-      feedbackMessage.value = {
-        type: 'success',
-        text: 'सही उत्तर! बधाई हो! (Correct! Great job!)'
-      }
-    } else {
-      feedbackMessage.value = {
-        type: 'error',
-        text: `गलत उत्तर। सही उत्तर था: ${correctAnswer} (Wrong answer. The correct word was: ${correctAnswer})`
-      }
+    feedbackMessage.value = {
+      type: isCorrect ? 'success' : 'error',
+      text: isCorrect 
+        ? 'बधाई हो! आपका उत्तर सही है। (Congratulations! Your answer is correct.)' 
+        : 'क्षमा करें, यह उत्तर सही नहीं है। (Sorry, this answer is incorrect.)'
     }
 
-    // Move to next challenge or end session
-    setTimeout(async () => {
-      if (currentChallengeIndex.value < 9) {
-        currentChallengeIndex.value++
-        resetChallenge()
-      } else {
-        // Final challenge completed
-        await endActivity()
-      }
-    }, 1000)
-  } catch (error) {
-    console.error('Failed to submit activity:', error)
+    // Additional feedback with Hinglish and English translations
+    if (isCorrect) {
+      console.log(`Word Details - Hinglish: ${hinglish}, English: ${english}`)
+    }
+
+    // Increment score or handle challenge progression
+    if (isCorrect) {
+      score.value += challengeScore
+    }
+
+    // Update to handle final challenge
+    if (currentChallengeIndex.value === 9) {
+      activityCompleted.value = true
+      await endActivity()
+    } else {
+      currentChallengeIndex.value++
+      resetChallenge()
+    }
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.error('Answer submission error:', errorMessage)
     feedbackMessage.value = {
       type: 'error',
-      text: 'Error submitting answer. Please try again.'
+      text: `उत्तर जमा करने में त्रुटि: ${errorMessage}`
     }
   }
 }
@@ -258,9 +321,10 @@ const skipChallenge = async () => {
     // Move to next challenge or end session
     if (currentChallengeIndex.value < 9) {
       currentChallengeIndex.value++
+      // Fetch next word
+      await refetch()
       resetChallenge()
     } else {
-      // Final challenge skipped
       await endActivity()
     }
   } catch (error) {
@@ -273,36 +337,84 @@ const skipChallenge = async () => {
 }
 
 const endActivity = async () => {
-  if (!session.value) return
-
   try {
-    // Close session with final score
-    await apiService.closeSession(session.value.id, score.value)
-    
-    // Mark activity as completed
-    activityCompleted.value = true
+    if (session.value) {
+      // Close the session with final score
+      const finalSession = await apiService.closeSession(session.value.id, score.value)
+      
+      // Update session with final details
+      session.value = finalSession
+      
+      // Ensure activity is marked as completed
+      activityCompleted.value = true
+    }
   } catch (error) {
-    console.error('Failed to close session:', error)
+    console.error('Error ending activity:', error)
+    
+    // More detailed error handling
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.error || 
+                           'Unknown server error'
+      
+      feedbackMessage.value = {
+        type: 'error',
+        text: `Could not complete activity: ${errorMessage}`
+      }
+    } else {
+      feedbackMessage.value = {
+        type: 'error',
+        text: 'Could not complete activity. Please try again.'
+      }
+    }
   }
 }
 
 const resetChallenge = () => {
-  userAnswer.value = []
+  userInput.value = []
   feedbackMessage.value = null
 }
 
-const selectLetter = (index: number) => {
-  const letter = currentChallenge.value.scrambledWord[index]
-  userAnswer.value.push(letter)
-}
-
 const removeLetter = (index: number) => {
-  userAnswer.value.splice(index, 1)
+  userInput.value.splice(index, 1)
 }
 
 const handleActivityEnd = () => {
-  popupControl.close()
+  // Safe injection with type checking
+  if (typeof popupControl.close === 'function') {
+    popupControl.close()
+  } else {
+    console.warn('Popup close method not available')
+    // Fallback method to close the activity
+    activityCompleted.value = true
+  }
 }
+
+// Initialize session on component mount
+onMounted(async () => {
+  try {
+    // Create session
+    session.value = await apiService.createSession(props.activityId)
+    
+    console.log('Session created:', session.value)
+    
+    // Fetch first word
+    await refetch()
+  } catch (error) {
+    console.error('Initialization error:', error)
+    
+    // Set a generic error message
+    feedbackMessage.value = {
+      type: 'error',
+      text: 'सत्र शुरू करने में त्रुटि (Error starting session)'
+    }
+    
+    // Close the popup on critical error
+    if (typeof popupControl.close === 'function') {
+      popupControl.close()
+    }
+  }
+})
 </script>
 
 <style scoped>

@@ -6,62 +6,17 @@ You are given a list of words, which may or may not be in order. Reorder the wor
 - Score for each incorrect answer is 0 points.
 - Score for each empty answer is 0 points.
 - The words can be picked up from /api/words/random. It has scrambled letters.
-- Each session will show 10 words.
 - The challenge should show unscrabled hindi words fetched from /api/words/random.
-
-2. Group the Words
-You are given a list of words, which belong to the same group. Group the words in any order you like, but ensure that no word is left out.
-- Total of 6 words are displayed at a time. 
-- Maximum of 4 words are correct. 
-- The answers can be input out in both hindi / hinglish.
-- Score for each correct answer is 10 points.
-- Score for each incorrect answer is 0 points.
-- Score for each empty answer is 0 points.
-
-3. Complete the Word
-You are given a word, which is not displayed correctly. You need to guess the complete word. 
-- The answers can be input out in both hindi / hinglish.
-- Score for each correct answer is 10 points.
-- Score for each incorrect answer is 0 points.
-- Score for each empty answer is 0 points.
-- Total possible attemps are 3 for each entry. 
+- Each session will show 10 words.
+- A new word should be fetched on each challenge. 
+- The Study activity should stop after 10 challenges.
+- The study activity should show the final score after the last challenge.
+- The Finish button should allow the activity to be closed.
 
 # Study Activities Execution Plan
 
 ## Overview
 This plan outlines the comprehensive strategy for developing and implementing study activities in our language learning portal. The goal is to create engaging, educational, and interactive learning experiences that help users improve their language skills.
-
-## Activity Types
-
-### 1. Unscramble Words
-- **Objective**: Improve vocabulary and word recognition
-- **Mechanics**:
-  - Present scrambled letters of a word
-  - User must rearrange letters to form a correct word
-- **Difficulty Levels**:
-  - Easy: 3-4 letter words
-  - Medium: 5-6 letter words
-  - Hard: 7+ letter words
-- **Scoring**:
-  - Correct word: +10 points
-  - Time bonus: Additional points for quick solving
-  - Hint penalty: Points deducted for using hints
-
-### 2. Word Match
-- **Objective**: Enhance vocabulary and word-meaning associations
-- **Mechanics**:
-  - Present words in two columns (Hindi/English)
-  - User must match corresponding words
-- **Difficulty Levels**:
-  - Easy: Common, basic vocabulary
-  - Medium: Intermediate vocabulary
-  - Hard: Advanced, context-specific words
-- **Scoring**:
-  - Correct match: +5 points per pair
-  - Perfect match bonus: +20 points
-  - Time-based scoring
-
-## Implementation Guidelines for Study Activities
 
 ### Core Principles
 - Study Activities are interactive mini-apps
@@ -159,7 +114,9 @@ Guides to Build Study Activities
 - Study Activities need to be their own interactive mini apps.
 - Study Activities should launch as a popup on the current page.
 - The popup should come as an overlay centered on the screen, 
-- The popup should close if the user navigates to other pages
+- The popup should close if the user navigates to other pages.
+- The popup for activity should be above the overlay.
+- Clicking the close button should end the session.
 - The scoring mechanism is provided with the activity.
 
 - Study Activities will create a session on start
@@ -170,8 +127,11 @@ Guides to Build Study Activities
 - Each challenge is scored based on the input that is provided.
 - The score are saved via the means of session activity API. 
 - There should be option to skip the challenge and move to the next challenge.
-- Activity should end after final challenge.
-- Final score should be displayed at the end of the activity.
+- The final challenge should be the last challenge in all sessions.
+- There should be a "Finish" button at the final challenge. 
+- Session should end after final challenge.
+- Session score should show up after the challenge has finished.
+- Session score page should be animated.
 
 - Session ends at the end of study activity.
 - Final Score of the session is prepared based on all the scores in the session. 
