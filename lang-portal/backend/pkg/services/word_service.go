@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
@@ -157,24 +159,26 @@ func (s *WordService) GetWords(ctx context.Context, page, pageSize int) ([]*mode
 
 // GetRandomWordWithGroup retrieves a random word, optionally filtered by group
 func (s *WordService) GetRandomWordWithGroup(ctx context.Context, groupID *int64) (*models.Word, error) {
-	// Prepare search parameters
-	params := repository.ListWordsParams{
-		Page:     1,
-		PageSize: 1,
-	}
-
-	// If group ID is provided, add group filter as part of search
+	// If group ID is provided, get words for that group
 	if groupID != nil {
-		params.Search = fmt.Sprintf("group:%d", *groupID)
+		words, err := s.repo.GetWordsByGroupID(ctx, *groupID)
+		if err != nil {
+			return nil, err
+		}
+
+		// If no words in the group, return error
+		if len(words) == 0 {
+			return nil, fmt.Errorf("no words found in group")
+		}
+
+		// Randomly select a word from the group
+		rand.Seed(time.Now().UnixNano())
+		randomIndex := rand.Intn(len(words))
+		return &words[randomIndex], nil
 	}
 
-	// Retrieve random word
-	words, _, err := s.repo.List(ctx, params)
-	if err != nil || len(words) == 0 {
-		return nil, fmt.Errorf("failed to retrieve random word: %v", err)
-	}
-
-	return &words[0], nil
+	// If no group specified, use the standard random word method
+	return s.GetRandomWord(ctx)
 }
 
 // SearchWordsWithTerm searches for words based on a search term

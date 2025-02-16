@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 )
@@ -295,10 +297,19 @@ func (r *SQLiteWordRepository) List(ctx context.Context, params ListWordsParams)
 
 // GetRandomWord retrieves a random word from the database
 func (r *SQLiteWordRepository) GetRandomWord(ctx context.Context) (*models.Word, error) {
+	// Seed the random number generator with current time to ensure different results
+	rand.Seed(time.Now().UnixNano())
+
+	// Prepare a query that selects a random word with more randomness
 	query := `
+		WITH RandomWords AS (
+			SELECT id, hindi, scrambled, hinglish, english, created_at,
+				   ABS(RANDOM()) as random_value
+			FROM words
+		)
 		SELECT id, hindi, scrambled, hinglish, english, created_at
-		FROM words
-		ORDER BY RANDOM()
+		FROM RandomWords
+		ORDER BY random_value
 		LIMIT 1
 	`
 
