@@ -9,6 +9,9 @@ You are given a list of words, which may or may not be in order. Reorder the wor
 - The challenge should show unscrabled hindi words fetched from /api/words/random.
 - Each session will show 10 words.
 - A new word should be fetched on each challenge. 
+- The study activity should move to next challenge after submitting answer. 
+- The UI should not show hinglish words.
+- Original word should not be shown
 - The Study activity should stop after 10 challenges.
 - The study activity should show the final score after the last challenge.
 - The Finish button should allow the activity to be closed.
