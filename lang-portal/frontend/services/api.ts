@@ -22,7 +22,7 @@ export interface Session {
 
 export interface SessionActivity {
   session_id: number
-  activity_id: string
+  activity_id: number
   challenge: string
   answer: string
   input: string

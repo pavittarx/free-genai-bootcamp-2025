@@ -144,7 +144,7 @@ import axios from 'axios'
 
 // Props definition
 const props = defineProps<{
-  activityId: string
+  activityId: string | number
 }>()
 
 // State management
@@ -180,6 +180,7 @@ const fetchRandomWord = async (index: number): Promise<Word> => {
 const currentChallenge = ref<{
   word: string
   scrambledWord: string
+  english: string
 } | null>(null)
 
 // Query for fetching words
@@ -201,10 +202,19 @@ watch(queryData, (newWord) => {
   if (newWord) {
     currentChallenge.value = {
       word: newWord.hindi,
-      scrambledWord: newWord.scrambled
+      scrambledWord: newWord.scrambled,
+      english: newWord.english || ''
     }
   }
 }, { immediate: true })
+
+// Current word computation
+const currentWord = computed(() => {
+  return currentChallenge.value ? {
+    english: currentChallenge.value.english || '',
+    hindi: currentChallenge.value.word || ''
+  } : null
+})
 
 // Error message computation
 const errorMessage = computed(() => {
@@ -229,80 +239,95 @@ const removeLetter = (index: number) => {
 
 // Answer checking method
 const checkAnswer = async () => {
-  if (!currentChallenge.value || !session.value) {
-    console.warn('Cannot check answer: missing data')
-    return
-  }
-
-  const userInputValue = userInput.value.join('')
-  const correctAnswer = currentChallenge.value.scrambledWord
-  const isCorrect = userInputValue.toLowerCase() === correctAnswer.toLowerCase()
-  const challengeScore = isCorrect ? 5 : 0
-  
   try {
-    // Submit session activity
-    await apiService.submitActivity({
-      session_id: session.value.id,
-      activity_id: props.activityId,
-      challenge: currentChallenge.value.word,
-      answer: correctAnswer,
-      input: userInputValue,
-      score: challengeScore
-    })
-
-    // Update feedback message
-    feedbackMessage.value = {
-      type: isCorrect ? 'success' : 'error',
-      text: isCorrect 
-        ? 'बधाई हो! आपका उत्तर सही है। (Congratulations! Your answer is correct.)' 
-        : 'क्षमा करें, यह उत्तर सही नहीं है। (Sorry, this answer is incorrect.)'
+    // Convert activityId to number
+    const activityIdNumber = Number(props.activityId)
+    
+    // Combine user input
+    const userAnswer = userInput.value.join('')
+    
+    // Validate answer
+    if (userAnswer.length !== currentChallenge.value?.scrambledWord.length) {
+      feedbackMessage.value = {
+        type: 'error',
+        text: 'कृपया सभी अक्षर चुनें (Please select all letters)'
+      }
+      return
     }
-
+    
+    // Check if answer is correct
+    const isCorrect = userAnswer.toLowerCase() === currentChallenge.value?.word.toLowerCase()
+    
     // Update score
-    score.value += challengeScore
-
-    // Handle challenge progression
-    if (currentChallengeIndex.value === 9) {
-      activityCompleted.value = true
-      await endActivity()
+    if (isCorrect) {
+      score.value += 5
+      feedbackMessage.value = {
+        type: 'success',
+        text: 'सही उत्तर! (Correct Answer!)'
+      }
     } else {
-      currentChallengeIndex.value++
-      await resetChallenge()
+      feedbackMessage.value = {
+        type: 'error',
+        text: 'गलत उत्तर। (Wrong Answer.)'
+      }
     }
+    
+    // Save session activity
+    await apiService.submitActivity({
+      session_id: session.value?.id || 0,
+      activity_id: activityIdNumber,
+      challenge: currentChallenge.value?.word || '',
+      answer: currentChallenge.value?.scrambledWord || '',
+      input: userAnswer,
+      score: isCorrect ? 5 : 0
+    })
+    
+    // Move to next challenge
+    await moveToNextChallenge()
   } catch (error) {
-    console.error('Answer submission error:', error)
+    console.error('Error checking answer:', error)
     feedbackMessage.value = {
       type: 'error',
-      text: 'उत्तर जमा करने में त्रुटि (Error submitting answer)'
+      text: 'त्रुटि आई (An error occurred)'
     }
   }
 }
 
 // Skip challenge method
 const skipChallenge = async () => {
-  if (!currentChallenge.value || !session.value) return
-
   try {
-    // Submit skipped activity
+    // Convert activityId to number
+    const activityIdNumber = Number(props.activityId)
+    
+    // Save skipped session activity
     await apiService.submitActivity({
-      session_id: session.value.id,
-      activity_id: props.activityId,
-      challenge: currentChallenge.value.word,
-      answer: currentChallenge.value.scrambledWord,
+      session_id: session.value?.id || 0,
+      activity_id: activityIdNumber,
+      challenge: currentChallenge.value?.word || '',
+      answer: currentChallenge.value?.scrambledWord || '',
       input: '',
       score: 0
     })
-
-    // Handle challenge progression
-    if (currentChallengeIndex.value === 9) {
-      activityCompleted.value = true
-      await endActivity()
-    } else {
-      currentChallengeIndex.value++
-      await resetChallenge()
-    }
+    
+    // Move to next challenge
+    await moveToNextChallenge()
   } catch (error) {
-    console.error('Skip challenge error:', error)
+    console.error('Error skipping challenge:', error)
+    feedbackMessage.value = {
+      type: 'error',
+      text: 'त्रुटि आई (An error occurred)'
+    }
+  }
+}
+
+// Move to next challenge method
+const moveToNextChallenge = async () => {
+  if (currentChallengeIndex.value === 9) {
+    activityCompleted.value = true
+    await endActivity()
+  } else {
+    currentChallengeIndex.value++
+    await resetChallenge()
   }
 }
 
@@ -345,24 +370,67 @@ const handleActivityEnd = () => {
   }
 }
 
+// Handle popup closure
+const handlePopupClose = async () => {
+  try {
+    // If activity is not completed, end the session
+    if (!activityCompleted.value) {
+      await endActivity()
+    }
+    
+    // Close the popup
+    if (typeof popupControl.close === 'function') {
+      popupControl.close()
+    }
+  } catch (error) {
+    console.error('Error closing popup:', error)
+  }
+}
+
 // Initialize session on component mount
 onMounted(async () => {
   try {
-    // Create session
-    session.value = await apiService.createSession(props.activityId)
+    // Convert activityId to number
+    const activityIdNumber = Number(props.activityId)
     
-    // Fetch first word
-    await refetch()
-  } catch (error) {
-    console.error('Initialization error:', error)
-    
-    // Set error feedback
-    feedbackMessage.value = {
-      type: 'error',
-      text: 'सत्र शुरू करने में त्रुटि (Error starting session)'
+    // Validate activity ID
+    if (isNaN(activityIdNumber) || activityIdNumber <= 0) {
+      throw new Error('Invalid activity ID')
     }
     
-    // Close popup on critical error
+    // Reset all activity states
+    currentChallengeIndex.value = 0
+    userInput.value = []
+    score.value = 0
+    activityCompleted.value = false
+    feedbackMessage.value = null
+    
+    // Create session using numeric ID
+    session.value = await apiService.createSession(activityIdNumber)
+    
+    if (!session.value || !session.value.id) {
+      throw new Error('Failed to create session')
+    }
+    
+    // Fetch first word
+    const result = await refetch()
+    
+    // Validate word fetch
+    if (!result.data) {
+      throw new Error('Failed to fetch initial word')
+    }
+  } catch (error) {
+    // Detailed error handling
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : 'Unknown initialization error'
+    
+    feedbackMessage.value = {
+      type: 'error',
+      text: `सत्र शुरू करने में त्रुटि: ${errorMessage}`
+    }
+    
+    // Ensure popup closes on critical error
     if (typeof popupControl.close === 'function') {
       popupControl.close()
     }
