@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 	"github.com/pavittarx/lang-portal/backend/pkg/repository"
@@ -130,4 +132,92 @@ func (s *WordService) GetRandomWord(ctx context.Context) (*models.Word, error) {
 // GetWordsByGroupID retrieves all words associated with a specific group
 func (s *WordService) GetWordsByGroupID(ctx context.Context, groupID int64) ([]models.Word, error) {
 	return s.repo.GetWordsByGroupID(ctx, groupID)
+}
+
+// GetWords retrieves a paginated list of words
+func (s *WordService) GetWords(ctx context.Context, page, pageSize int) ([]*models.Word, int64, error) {
+	// Prepare parameters for list operation
+	params := repository.ListWordsParams{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	// Retrieve words with pagination
+	words, totalCount, err := s.repo.List(ctx, params)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to retrieve words: %v", err)
+	}
+
+	// Convert to pointer slice if needed
+	wordPtrs := make([]*models.Word, len(words))
+	for i := range words {
+		wordPtrs[i] = &words[i]
+	}
+
+	return wordPtrs, int64(totalCount), nil
+}
+
+// GetRandomWordWithGroup retrieves a random word, optionally filtered by group
+func (s *WordService) GetRandomWordWithGroup(ctx context.Context, groupID *int64) (*models.Word, error) {
+	// If group ID is provided, get words for that group
+	if groupID != nil {
+		words, err := s.repo.GetWordsByGroupID(ctx, *groupID)
+		if err != nil {
+			return nil, err
+		}
+
+		// If no words in the group, return error
+		if len(words) == 0 {
+			return nil, fmt.Errorf("no words found in group")
+		}
+
+		// Randomly select a word from the group
+		rand.Seed(time.Now().UnixNano())
+		randomIndex := rand.Intn(len(words))
+		return &words[randomIndex], nil
+	}
+
+	// If no group specified, use the standard random word method
+	return s.GetRandomWord(ctx)
+}
+
+// SearchWordsWithTerm searches for words based on a search term
+func (s *WordService) SearchWordsWithTerm(ctx context.Context, searchTerm string) ([]*models.Word, error) {
+	// Prepare search parameters
+	params := repository.ListWordsParams{
+		Search: searchTerm,
+		Page:   1,
+		PageSize: 50, // Allow a larger default page size for search results
+	}
+
+	// Search for words
+	words, _, err := s.repo.List(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search words: %v", err)
+	}
+
+	// Convert to pointer slice
+	wordPtrs := make([]*models.Word, len(words))
+	for i := range words {
+		wordPtrs[i] = &words[i]
+	}
+
+	return wordPtrs, nil
+}
+
+// GetWordsByGroup retrieves words for a specific group
+func (s *WordService) GetWordsByGroup(ctx context.Context, groupID int64) ([]*models.Word, error) {
+	// Retrieve words for the specified group
+	words, err := s.repo.GetWordsByGroupID(ctx, groupID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve words for group: %v", err)
+	}
+
+	// Convert to pointer slice
+	wordPtrs := make([]*models.Word, len(words))
+	for i := range words {
+		wordPtrs[i] = &words[i]
+	}
+
+	return wordPtrs, nil
 }

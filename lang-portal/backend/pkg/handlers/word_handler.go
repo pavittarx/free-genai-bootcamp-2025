@@ -250,3 +250,101 @@ func (h *WordHandler) GetWordsByGroupID(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, words)
 }
+
+// GetWords retrieves a list of all words
+func (h *WordHandler) GetWords(c echo.Context) error {
+	// Parse pagination parameters
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(c.QueryParam("pageSize"))
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	// Retrieve words with pagination
+	words, total, err := h.wordService.GetWords(c.Request().Context(), page, pageSize)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve words",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"words":    words,
+		"total":    total,
+		"page":     page,
+		"pageSize": pageSize,
+	})
+}
+
+// GetRandomWordFiltered retrieves a random word, optionally filtered by group
+func (h *WordHandler) GetRandomWordFiltered(c echo.Context) error {
+	// Parse group ID if provided
+	groupIDStr := c.QueryParam("group_id")
+	var groupID *int64
+	if groupIDStr != "" {
+		parsedGroupID, err := strconv.ParseInt(groupIDStr, 10, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": "Invalid group ID",
+			})
+		}
+		groupID = &parsedGroupID
+	}
+
+	// Retrieve a random word
+	word, err := h.wordService.GetRandomWordWithGroup(c.Request().Context(), groupID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve random word",
+		})
+	}
+
+	return c.JSON(http.StatusOK, word)
+}
+
+// SearchWordsTerm searches for words based on a search term
+func (h *WordHandler) SearchWordsTerm(c echo.Context) error {
+	// Get search term from query parameter
+	searchTerm := c.QueryParam("term")
+	if searchTerm == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Search term is required",
+		})
+	}
+
+	// Search for words
+	words, _, err := h.wordService.SearchWords(c.Request().Context(), searchTerm, "")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to search words",
+		})
+	}
+
+	return c.JSON(http.StatusOK, words)
+}
+
+// GetWordsByGroup retrieves words for a specific group
+func (h *WordHandler) GetWordsByGroup(c echo.Context) error {
+	// Parse group ID from URL parameter
+	groupIDStr := c.Param("group-id")
+	groupID, err := strconv.ParseInt(groupIDStr, 10, 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid group ID",
+		})
+	}
+
+	// Retrieve words for the group
+	words, err := h.wordService.GetWordsByGroupID(c.Request().Context(), groupID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to retrieve words for group",
+		})
+	}
+
+	return c.JSON(http.StatusOK, words)
+}

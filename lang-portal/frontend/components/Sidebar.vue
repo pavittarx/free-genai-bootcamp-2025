@@ -111,7 +111,7 @@ const navigationLinks = [
   { to: '/words', label: 'Words', icon: BookOpen },
   { to: '/groups', label: 'Groups', icon: Layers },
   { to: '/study-activities', label: 'Study Activities', icon: Brain },
-  { to: '/statistics', label: 'Statistics', icon: BarChart }
+  { to: '/sessions', label: 'Sessions', icon: BarChart }
 ]
 
 // Load user name from localStorage on component mount

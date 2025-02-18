@@ -86,3 +86,20 @@ func (s *GroupService) ListGroups(ctx context.Context, page, pageSize int, searc
 	// List groups from the repository
 	return s.groupRepo.List(ctx, page, pageSize, search)
 }
+
+// GetGroups retrieves a paginated list of groups
+func (s *GroupService) GetGroups(ctx context.Context, page, pageSize int) ([]*models.Group, int64, error) {
+	// Retrieve groups with pagination
+	groups, totalCount, err := s.groupRepo.List(ctx, page, pageSize, "")
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to retrieve groups: %v", err)
+	}
+
+	// Convert to pointer slice if needed
+	groupPtrs := make([]*models.Group, len(groups))
+	for i := range groups {
+		groupPtrs[i] = &groups[i]
+	}
+
+	return groupPtrs, int64(totalCount), nil
+}

@@ -49,7 +49,6 @@ table: sessions
 columns: 
    - id: integer
    - activity_id: integer
-   - group_id: integer
    - start_time: datetime
    - end_time: datetime
    - score: integer
@@ -114,7 +113,6 @@ erDiagram
     sessions {
         integer id PK
         integer activity_id FK
-        integer group_id FK
         datetime start_time
         datetime end_time
         integer score
@@ -135,24 +133,62 @@ erDiagram
 
 
 ## API Design
+- [GET] /api/words
+    - lists all words
 
-[GET]
-- /api/words
-- /api/words/:id
+- [GET] /api/words/random
+    - this should take a group_id
 
-- /api/groups
-- /api/groups/:id
+- [GET] /api/words/search
+    - this should take a search term
 
-- /api/words/groups/:group-id  -- joins words and groups tables based on word_groups table and filters by group_id
+- [GET] /api/groups
+    - lists all groups
 
-- /api/study-activities -- lists all available study activities
-- /api/sessions -- lists all sessions so far
-- /api/sessions/:id -- lists session details including its study activities
+- [GET] /api/words/groups/:group-id  
+    - lists all words from a group
+    - joins words and groups tables based on word_groups table and filters by group_id
 
-[POST]
-- /api/sessions
-- /api/session-activity
+- [GET] /api/study-activities 
+    - lists all available study activities
 
-[PUT]
-- /api/sessions
-- /api/session-activity
+- [POST] /api/sessions
+  - this should take activity_id
+  - this handler should automatically start_time for session
+
+- [POST] /api/session-activity
+  - this should take session_id
+  - this should take activity_id
+  - the challenge should be added to the session_activity table
+  - the answer should be added to the session_activity table
+  - the input should be added to the session_activity table
+  - the score should be added to the session_activity table
+  - this should be a single row in the table
+
+- [PUT] /api/sessions
+    - this should allow updating the end_time and score of a session
+- [GET] /api/sessions 
+    - lists details of all sessions
+    - pagination is required
+    - it should also provide study activity name of each session by joining the study_activities table
+- [GET] /api/sessions/:id
+    - lists individual session details
+    - joins sessions and session_activities tables based on session_id 
+    - lists session details including its study activities
+    - no pagination is required.
+
+- [DELETE] /api/sessions/
+    - this should delete all sessions
+    - this should also delete all session_activities associated with the sessions
+
+## Documentation
+- Avoid Littering the codebase with comments. 
+- Modify the swagger doc with endpoint changes
+- The swagge doc should exactly match the API
+- No versioning is required, and should not be used in the API
+- All APIs are prefix with /api, documentation should be also follow same
+- Swagger UI should be updated after api documentation 
+- There is always only a single user, no authentication/authorisation is required
+- Parameters will be in url/query for GET requests
+- Parameters will be in url/query for  requests
+- Keep parameters in body for POST/PUT requests

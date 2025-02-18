@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"math/rand"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/pavittarx/lang-portal/backend/pkg/models"
 )
@@ -198,26 +202,39 @@ func (r *SQLiteWordRepository) List(ctx context.Context, params ListWordsParams)
 	offset := (params.Page - 1) * params.PageSize
 
 	// Base query
-	baseQuery := `FROM words WHERE 1=1`
+	baseQuery := `FROM words w WHERE 1=1`
 	args := []interface{}{}
 
 	// Add search filter if provided
 	if params.Search != "" {
-		searchParam := "%" + params.Search + "%"
-		switch params.Language {
-		case "hindi":
-			baseQuery += ` AND hindi LIKE ?`
-			args = append(args, searchParam)
-		case "english":
-			baseQuery += ` AND english LIKE ?`
-			args = append(args, searchParam)
-		case "hinglish":
-			baseQuery += ` AND hinglish LIKE ?`
-			args = append(args, searchParam)
-		default:
-			// Search across all fields if no specific language is specified
-			baseQuery += ` AND (hindi LIKE ? OR english LIKE ? OR hinglish LIKE ?)`
-			args = append(args, searchParam, searchParam, searchParam)
+		// Check if search is a group filter
+		if strings.HasPrefix(params.Search, "group:") {
+			groupID, err := strconv.ParseInt(strings.TrimPrefix(params.Search, "group:"), 10, 64)
+			if err == nil {
+				// Join with word_groups to filter by group
+				baseQuery += ` AND w.id IN (
+					SELECT word_id FROM word_groups 
+					WHERE group_id = ?
+				)`
+				args = append(args, groupID)
+			}
+		} else {
+			searchParam := "%" + params.Search + "%"
+			switch params.Language {
+			case "hindi":
+				baseQuery += ` AND w.hindi LIKE ?`
+				args = append(args, searchParam)
+			case "english":
+				baseQuery += ` AND w.english LIKE ?`
+				args = append(args, searchParam)
+			case "hinglish":
+				baseQuery += ` AND w.hinglish LIKE ?`
+				args = append(args, searchParam)
+			default:
+				// Search across all fields if no specific language is specified
+				baseQuery += ` AND (w.hindi LIKE ? OR w.english LIKE ? OR w.hinglish LIKE ?)`
+				args = append(args, searchParam, searchParam, searchParam)
+			}
 		}
 	}
 
@@ -236,7 +253,7 @@ func (r *SQLiteWordRepository) List(ctx context.Context, params ListWordsParams)
 	log.Printf("Total count of words: %d", totalCount)
 
 	// Retrieve words with pagination
-	query := `SELECT id, hindi, scrambled, hinglish, english, created_at ` +
+	query := `SELECT w.id, w.hindi, w.scrambled, w.hinglish, w.english, w.created_at ` +
 		baseQuery + ` LIMIT ? OFFSET ?`
 	args = append(args, params.PageSize, offset)
 
@@ -264,28 +281,35 @@ func (r *SQLiteWordRepository) List(ctx context.Context, params ListWordsParams)
 			&word.CreatedAt,
 		); err != nil {
 			log.Printf("Error scanning word: %v", err)
-			return nil, 0, fmt.Errorf("error scanning word: %w", err)
+			return nil, 0, fmt.Errorf("failed to scan word: %w", err)
 		}
 		words = append(words, word)
 	}
 
-	// Check for any errors encountered during iteration
-	if err := rows.Err(); err != nil {
+	// Check for any errors during iteration
+	if err = rows.Err(); err != nil {
 		log.Printf("Error iterating rows: %v", err)
-		return nil, 0, fmt.Errorf("error iterating rows: %w", err)
+		return nil, 0, fmt.Errorf("error iterating words: %w", err)
 	}
-
-	log.Printf("Retrieved %d words", len(words))
 
 	return words, totalCount, nil
 }
 
 // GetRandomWord retrieves a random word from the database
 func (r *SQLiteWordRepository) GetRandomWord(ctx context.Context) (*models.Word, error) {
+	// Seed the random number generator with current time to ensure different results
+	rand.Seed(time.Now().UnixNano())
+
+	// Prepare a query that selects a random word with more randomness
 	query := `
+		WITH RandomWords AS (
+			SELECT id, hindi, scrambled, hinglish, english, created_at,
+				   ABS(RANDOM()) as random_value
+			FROM words
+		)
 		SELECT id, hindi, scrambled, hinglish, english, created_at
-		FROM words
-		ORDER BY RANDOM()
+		FROM RandomWords
+		ORDER BY random_value
 		LIMIT 1
 	`
 

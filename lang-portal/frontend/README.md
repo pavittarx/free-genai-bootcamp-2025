@@ -22,7 +22,13 @@ The portal in its current form, will do the following:
 - Session Activity can be created.
 - Sessions Activity cannot be edited or deleted. 
 
-## Pages
+## Design
+- Keep the design of the project in sync with other pages.
+- Keep the functionality of the project in sync with the backend.
+- Try to create common components for the pages.
+- Only Study Activity are an exception that come in popup. 
+- All the other pages should follow similar design.
+
 1. Dashboard Page  
 - The dashboard page will act as the landing page for the user. 
 - The dashboard will contain menu. The menu will contain links to different pages.

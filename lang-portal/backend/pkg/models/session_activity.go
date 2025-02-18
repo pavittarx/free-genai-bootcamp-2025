@@ -9,7 +9,9 @@ type SessionActivity struct {
 	ID         int64     `json:"id" db:"id"`
 	SessionID  int64     `json:"session_id" db:"session_id"`
 	ActivityID int64     `json:"activity_id" db:"activity_id"`
+	Challenge  string    `json:"challenge" db:"challenge"`
 	Answer     string    `json:"answer" db:"answer"`
+	Input      string    `json:"input" db:"input"`
 	Result     string    `json:"result" db:"result"`
 	Score      int       `json:"score" db:"score"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
@@ -26,8 +28,17 @@ func (sa *SessionActivity) Validate() error {
 		return ErrInvalidID
 	}
 
-	// Score validation (can be 0 or positive)
-	if sa.Score < 0 {
+	// Challenge and answer cannot be empty
+	if sa.Challenge == "" {
+		return ErrInvalidInput
+	}
+
+	if sa.Answer == "" {
+		return ErrInvalidInput
+	}
+
+	// Input can be empty, but score validation remains
+	if sa.Score < 0 || sa.Score > 100 {
 		return ErrInvalidScore
 	}
 
