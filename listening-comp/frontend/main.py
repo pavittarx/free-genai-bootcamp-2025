@@ -4,6 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.transcript import YTTranscriptDownloader
+from backend.chat import OpenRouterChat
 
 # Page config
 st.set_page_config(
@@ -93,11 +94,11 @@ def render_sidebar():
 
 def render_chat_stage():
     """Render an improved chat interface"""
-    st.header("Chat with Nova")
+    st.header("Chat with Lexia")
 
     # Initialize BedrockChat instance if not in session state
-    # if 'bedrock_chat' not in st.session_state:
-        # st.session_state.bedrock_chat = BedrockChat()
+    if 'chat' not in st.session_state:
+        st.session_state.chat = OpenRouterChat()
 
     # Introduction text
     st.markdown("""
@@ -152,11 +153,10 @@ def process_message(message: str):
 
     # Generate and display assistant's response
     with st.chat_message("assistant", avatar="🤖"):
-        response = st.session_state.bedrock_chat.generate_response(message)
+        response = st.session_state.chat.generate_response(message)
         if response:
             st.markdown(response)
             st.session_state.messages.append({"role": "assistant", "content": response})
-
 
 
 def count_characters(text):
