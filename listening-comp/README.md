@@ -17,9 +17,13 @@ This would include everyday conversations in target language, such as ordering f
 - Videos might be missing transctipts needed.
 - The technical expertise with technologies used is missing. 
 
-## Technical Requirements
+## Technical Requirements 
 - YT Transcript API / Python
 - LLM Tool + Agent
 - Vector DB (ChromaDB)
 - Amazon Bedrock / Nova AI Model
 - ASR / TTS (Optional)
+
+
+## Technical Restrictions
+- Youtube Video url should be provied to pull the transcript

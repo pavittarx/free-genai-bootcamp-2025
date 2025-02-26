@@ -1,15 +1,9 @@
 import streamlit as st
-from typing import Dict
-import json
-from collections import Counter
-import re
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# from backend.chat import BedrockChat
-
+from backend.transcript import YTTranscriptDownloader
 
 # Page config
 st.set_page_config(
@@ -190,7 +184,7 @@ def render_transcript_stage():
     if url:
         if st.button("Download Transcript"):
             try:
-                downloader = YouTubeTranscriptDownloader()
+                downloader = YTTranscriptDownloader()
                 transcript = downloader.get_transcript(url)
                 if transcript:
                     # Store the raw transcript text in session state
