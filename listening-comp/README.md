@@ -20,3 +20,6 @@ This would include everyday conversations in target language, such as ordering f
 ## Technical Requirements
 - YT Transcript API / Python
 - LLM Tool + Agent
+- Vector DB (ChromaDB)
+- Amazon Bedrock / Nova AI Model
+- ASR / TTS (Optional)

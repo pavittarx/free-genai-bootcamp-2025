@@ -1,15 +1,17 @@
 [tool.poetry]
-name = "listen-learn-app"
+name = "listening-comp"
 version = "0.1.0"
 description = ""
 authors = ["pavittarx <pavittarx>"]
 license = "MIT"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.14"
 streamlit = "^1.42.2"
 chromadb = "^0.6.3"
+youtube-transcript-api = "^0.6.3"
 
 
 [build-system]
