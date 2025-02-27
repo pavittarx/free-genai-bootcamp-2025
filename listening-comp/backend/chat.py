@@ -1,11 +1,12 @@
 import os
 import requests
+import json
 import streamlit as st
 from typing import Optional, Dict, Any
-import json
+from dotenv import load_dotenv
 
+load_dotenv()
 
-# Default Model for OpenRouter
 MODEL_ID = "google/gemini-2.0-flash-lite-001"
 
 class OpenRouterChat:
@@ -60,14 +61,52 @@ class OpenRouterChat:
             print("Full OpenRouter API Response:")
             print(json.dumps(response_data, indent=2))
             
-            # Extract response content
-            if 'choices' in response_data and len(response_data['choices']) > 0:
-                return response_data['choices'][0]['message']['content']
-            elif 'error' in response_data:
-                st.error(f"OpenRouter API Error: {response_data['error']}")
-                return None
-            else:
-                st.error("Unexpected response format from OpenRouter API")
+            # Enhanced error handling for JSON parsing
+            try:
+                # Check if the response is a valid JSON with expected structure
+                if not isinstance(response_data, dict):
+                    st.error(f"Unexpected response type: {type(response_data)}")
+                    return None
+
+                # Extract response content with more robust checks
+                if 'choices' in response_data and response_data['choices']:
+                    first_choice = response_data['choices'][0]
+                    
+                    # Check if 'message' and 'content' exist
+                    if 'message' in first_choice and 'content' in first_choice['message']:
+                        content = first_choice['message']['content']
+                        
+                        # Additional check to ensure content is not empty or None
+                        if content and isinstance(content, str):
+                            # Try to parse content if it looks like it might be a JSON string
+                            if content.strip().startswith('{') and content.strip().endswith('}'):
+                                try:
+                                    parsed_content = json.loads(content)
+                                    return json.dumps(parsed_content)  # Return as formatted JSON
+                                except json.JSONDecodeError:
+                                    # If JSON parsing fails, return original content
+                                    return content
+                            return content
+                        
+                    st.error("Response content is empty or invalid")
+                    return None
+
+                elif 'error' in response_data:
+                    st.error(f"OpenRouter API Error: {response_data['error']}")
+                    return None
+                else:
+                    st.error("Unexpected response format from OpenRouter API")
+                    # Log the full response for debugging
+                    print("Unexpected response structure:")
+                    print(json.dumps(response_data, indent=2))
+                    return None
+
+            except Exception as parsing_error:
+                st.error(f"Error parsing OpenRouter response: {str(parsing_error)}")
+                # Log the full response and error for debugging
+                print("Response that caused parsing error:")
+                print(json.dumps(response_data, indent=2))
+                print(f"Parsing error details: {str(parsing_error)}")
                 return None
             
         except requests.RequestException as e:

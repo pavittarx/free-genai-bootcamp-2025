@@ -13,15 +13,18 @@ This would include everyday conversations in target language, such as ordering f
 - Can I leverage free-tier cloud services to run the app?
 - Will appropriate data be available for training the model?
 - I do not know how to work with vector databases.
+- There are no official exams for Hindi Language as JLPT5, there are exams like CSAT, and school exams, but they do not follow the pattern as JLPT5.
+- Structured Language Comprehension Videos are not available for Hindi Language as is available for Japanese
 - ASR / TTS support might not be available for hindi language.
 - Videos might be missing transctipts needed.
 - The technical expertise with technologies used is missing. 
 
 ## Technical Requirements 
-- YT Transcript API / Python
-- LLM Tool + Agent
+- Chat w/ LLM Model
+- Generate and Save Transcripts
+- Generate structured data from transcripts
 - Vector DB (ChromaDB)
-- Amazon Bedrock / Nova AI Model
+- OpenRouter API, Google Flash Model
 - ASR / TTS (Optional)
 
 

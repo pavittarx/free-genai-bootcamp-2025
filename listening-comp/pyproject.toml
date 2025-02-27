@@ -12,6 +12,7 @@ python = ">=3.12,<3.14"
 streamlit = "^1.42.2"
 chromadb = "^0.6.3"
 youtube-transcript-api = "^0.6.3"
+python-dotenv = "^1.0.1"
 
 
 [build-system]
