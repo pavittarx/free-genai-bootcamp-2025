@@ -29,3 +29,14 @@ This would include everyday conversations in target language, such as ordering f
 - Youtube Video url should be provied to pull the transcript
 - OpenRouter will be used as chat agent
 - The app should be able to handle a conversation with the user.
+
+## Transcript Sources 
+- https://www.youtube.com/watch?v=ijOqyASjgoM
+- https://www.youtube.com/watch?v=KXXp0fhHZys
+
+- The structure is as follows
+    1. Introduction
+    2. Question
+    3. Dialogue
+    4. Help for Answer
+    5. Answer
