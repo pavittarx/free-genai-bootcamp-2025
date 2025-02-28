@@ -1,10 +1,12 @@
 import streamlit as st
 import sys
 import os
+import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.transcript import YTTranscriptDownloader
 from backend.chat import OpenRouterChat
+from backend.structured_data import structured_data_with_genai
 
 # Page config
 st.set_page_config(
@@ -228,18 +230,98 @@ def render_transcript_stage():
 def render_structured_stage():
     """Render the structured data stage"""
     st.header("Structured Data Processing")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Dialogue Extraction")
-        # Placeholder for dialogue processing
-        st.info("Dialogue extraction will be implemented here")
         
-    with col2:
-        st.subheader("Data Structure")
-        # Placeholder for structured data view
-        st.info("Structured data view will be implemented here")
+    # Check if transcript is available
+    if not st.session_state.get('transcript'):
+        st.warning("Please load a transcript first in the Raw Transcript section")
+        return
+    
+    # Process the current transcript
+    try:
+        # Preprocess transcript: remove newlines, normalize spaces
+        processed_transcript = ' '.join(st.session_state.transcript.split())
+        
+        # Extract structured data directly from the current transcript
+        structured_data = structured_data_with_genai(processed_transcript)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Original Transcript")
+            st.text_area(
+                "Raw Transcript", 
+                value=st.session_state.transcript, 
+                height=300,
+                disabled=True
+            )
+            
+        with col2:
+            st.subheader("Structured Data Overview")
+            
+            # Create a more visually appealing display of key information
+            st.markdown("### 🌟 Transcript Insights")
+            
+            # Introduction card (first)
+            st.markdown("#### 📝 Introduction")
+            st.info(structured_data.get('introduction', 'No introduction available'))
+            
+            # Dialogue card (second)
+            st.markdown("#### 💬 Dialogue")
+            st.write(structured_data.get('dialogue', 'No dialogue available'))
+            
+            # Question card (third)
+            st.markdown("#### ❓ Key Question")
+            st.warning(structured_data.get('question', 'No question available'))
+        
+        # Detailed sections with expandable content
+        st.markdown("## 🔍 Detailed Breakdown")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Help/Clues Expander (hidden by default)
+            with st.expander("🔑 Help & Context", expanded=False):
+                st.markdown("**Contextual Clues:**")
+                st.write(structured_data.get('help_clues', 'No additional context available'))
+        
+        with col2:
+            # Answer Expander (hidden by default)
+            with st.expander("💡 Answer", expanded=False):
+                st.markdown("**Full Answer:**")
+                st.success(structured_data.get('answer', 'No answer available'))
+        
+        # Full JSON view in an expander
+        with st.expander("📊 Full Structured Data"):
+            st.json(structured_data)
+        
+        # Option to save structured transcript
+        if st.button("💾 Save Structured Transcript"):
+            # Generate unique filename
+            import uuid
+            filename = f"transcript_{uuid.uuid4().hex[:8]}_structured.json"
+            
+            # Path to structured transcripts directory
+            output_dir = os.path.join(
+                os.path.dirname(__file__), 
+                '..', 
+                'backend', 
+                'structured_transcripts'
+            )
+            
+            # Ensure directory exists
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Full path for the new file
+            output_path = os.path.join(output_dir, filename)
+            
+            # Save structured data
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(structured_data, f, ensure_ascii=False, indent=2)
+            
+            st.success(f"Structured transcript saved as {filename}")
+    
+    except Exception as e:
+        st.error(f"Error processing structured data: {e}")
 
 def render_rag_stage():
     """Render the RAG implementation stage"""
