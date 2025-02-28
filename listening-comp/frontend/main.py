@@ -294,32 +294,92 @@ def render_structured_stage():
         with st.expander("📊 Full Structured Data"):
             st.json(structured_data)
         
-        # Option to save structured transcript
-        if st.button("💾 Save Structured Transcript"):
-            # Generate unique filename
-            import uuid
-            filename = f"transcript_{uuid.uuid4().hex[:8]}_structured.json"
-            
-            # Path to structured transcripts directory
-            output_dir = os.path.join(
-                os.path.dirname(__file__), 
-                '..', 
-                'backend', 
-                'structured_transcripts'
-            )
-            
-            # Ensure directory exists
-            os.makedirs(output_dir, exist_ok=True)
-            
-            # Full path for the new file
-            output_path = os.path.join(output_dir, filename)
-            
-            # Save structured data
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(structured_data, f, ensure_ascii=False, indent=2)
-            
-            st.success(f"Structured transcript saved as {filename}")
-    
+        # Columns for save and vector store actions
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Option to save structured transcript
+            if st.button("💾 Save Structured Transcript"):
+                # Generate unique filename
+                import uuid
+                filename = f"transcript_{uuid.uuid4().hex[:8]}_structured.json"
+                
+                # Path to structured transcripts directory
+                output_dir = os.path.join(
+                    os.path.dirname(__file__), 
+                    '..', 
+                    'backend', 
+                    'structured_transcripts'
+                )
+                
+                # Ensure directory exists
+                os.makedirs(output_dir, exist_ok=True)
+                
+                # Full path for the new file
+                output_path = os.path.join(output_dir, filename)
+                
+                # Save structured data
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(structured_data, f, ensure_ascii=False, indent=2)
+                
+                st.success(f"Structured transcript saved as {filename}")
+        
+        with col2:
+            # Button to build vector store
+            if st.button("🗃️ Build Vector Store"):
+                try:
+                    from backend.vector_db import TranscriptVectorDB
+                    
+                    # Read structured transcripts
+                    transcripts = TranscriptVectorDB.read_structured_transcripts()
+                    
+                    # Check if any transcripts were found
+                    if not transcripts:
+                        st.warning("No structured transcripts found. Save some transcripts first.")
+                        st.info("Go to the 'Structured Data' section and save some transcripts before building the vector store.")
+                        return
+                    
+                    # Initialize and populate vector DB
+                    vector_db = TranscriptVectorDB()
+                    
+                    # Optional: Reset collection before adding new transcripts
+                    vector_db.reset_collection()
+                    
+                    # Add transcripts
+                    vector_db.add_transcripts(transcripts)
+                    
+                    st.success(f"Vector store built with {len(transcripts)} transcripts!")
+                    
+                    # Optional: Display some sample search results
+                    with st.expander("🔍 Sample Vector Store Search"):
+                        # Perform a sample search
+                        results = vector_db.search_transcripts("language learning")
+                        
+                        if results:
+                            for result in results:
+                                st.markdown(f"**Title:** {result['metadata']['title']}")
+                                st.markdown(f"**Excerpt:** {result['document'][:200]}...")
+                                st.markdown(f"**Relevance Score:** {1 - result['distance']:.2f}")
+                                st.markdown("---")
+                        else:
+                            st.info("No search results found.")
+                
+                except ImportError as e:
+                    st.error(f"Missing dependencies: {e}")
+                    st.info("Ensure you have installed chromadb and sentence-transformers")
+                
+                except Exception as e:
+                    st.error(f"Error building vector store: {e}")
+                    
+                    # Provide more detailed troubleshooting information
+                    st.markdown("### Troubleshooting Tips:")
+                    st.markdown("1. Ensure Chroma DB is installed correctly")
+                    st.markdown("2. Check that you have write permissions in the project directory")
+                    st.markdown("3. Verify that structured transcripts exist")
+                    st.markdown("4. Check for any permission or disk space issues")
+        
+        # End of vector store section
+        
     except Exception as e:
         st.error(f"Error processing structured data: {e}")
 

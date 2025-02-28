@@ -2,6 +2,7 @@ import os
 from typing import List, Dict, Any
 
 import chromadb
+from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 import json
 import glob
@@ -14,14 +15,58 @@ class TranscriptVectorDB:
         Args:
             collection_name (str): Name of the Chroma collection to use.
         """
-        # Create a persistent Chroma client
-        self.client = chromadb.PersistentClient(path="./chroma_db")
-        
-        # Create or get the collection
-        self.collection = self.client.get_or_create_collection(name=collection_name)
+        # Ensure the chroma_db directory exists
+        db_path = os.path.join(os.path.dirname(__file__), "chroma_db")
+        os.makedirs(db_path, exist_ok=True)
+
+        # Create a persistent Chroma client with explicit configuration
+        try:
+            self.client = chromadb.PersistentClient(
+                path=db_path,
+                settings=Settings(
+                    allow_reset=True,  # Allow resetting the database if needed
+                    anonymized_telemetry=False  # Disable telemetry
+                )
+            )
+            
+            # Explicitly create or get the collection
+            self.collection = self.client.get_or_create_collection(
+                name=collection_name, 
+                metadata={"description": "Transcript embeddings for semantic search"}
+            )
+            
+        except Exception as e:
+            print(f"Error initializing Chroma client: {e}")
+            # Fallback to in-memory client if persistent client fails
+            self.client = chromadb.Client()
+            self.collection = self.client.get_or_create_collection(
+                name=collection_name, 
+                metadata={"description": "Transcript embeddings for semantic search"}
+            )
         
         # Initialize embedding model
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+    def reset_collection(self, collection_name: str = "transcripts"):
+        """
+        Reset the entire collection, useful for clearing out old data.
+        
+        Args:
+            collection_name (str): Name of the collection to reset
+        """
+        try:
+            # Delete existing collection if it exists
+            self.client.delete_collection(name=collection_name)
+            
+            # Recreate the collection
+            self.collection = self.client.get_or_create_collection(
+                name=collection_name, 
+                metadata={"description": "Transcript embeddings for semantic search"}
+            )
+            return True
+        except Exception as e:
+            print(f"Error resetting collection: {e}")
+            return False
 
     def add_transcripts(self, transcripts: List[Dict[str, Any]]):
         """
