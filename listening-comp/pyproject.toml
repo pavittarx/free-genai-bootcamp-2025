@@ -13,6 +13,7 @@ streamlit = "^1.42.2"
 chromadb = "^0.6.3"
 youtube-transcript-api = "^0.6.3"
 python-dotenv = "^1.0.1"
+sentence-transformers = "^3.4.1"
 
 
 [build-system]
