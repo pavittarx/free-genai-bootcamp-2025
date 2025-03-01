@@ -20,6 +20,8 @@ if 'transcript' not in st.session_state:
     st.session_state.transcript = None
 if 'messages' not in st.session_state:
     st.session_state.messages = []
+if 'structured_data' not in st.session_state:
+    st.session_state.structured_data = None
 
 def render_header():
     """Render the header section"""
@@ -44,10 +46,8 @@ def render_sidebar():
             "Select Stage:",
             [
                 "1. Chat with Nova",
-                "2. Raw Transcript",
-                "3. Structured Data",
-                "4. RAG Implementation",
-                "5. Interactive Learning"
+                "2. Transcript Processing",
+                "3. Interactive Learning"
             ]
         )
         
@@ -60,28 +60,15 @@ def render_sidebar():
             - Identifying limitations
             """,
             
-            "2. Raw Transcript": """
+            "2. Transcript Processing": """
             **Current Focus:**
             - YouTube transcript download
-            - Raw text visualization
-            - Initial data examination
+            - Text processing
+            - Structured data generation
+            - Learning exercise creation
             """,
             
-            "3. Structured Data": """
-            **Current Focus:**
-            - Text cleaning
-            - Dialogue extraction
-            - Data structuring
-            """,
-            
-            "4. RAG Implementation": """
-            **Current Focus:**
-            - Bedrock embeddings
-            - Vector storage
-            - Context retrieval
-            """,
-            
-            "5. Interactive Learning": """
+            "3. Interactive Learning": """
             **Current Focus:**
             - Scenario generation
             - Audio synthesis
@@ -172,236 +159,241 @@ def count_characters(text):
     hi_chars = sum(1 for char in text if is_hindi(char))
     return hi_chars, len(text)
 
-def render_transcript_stage():
-    """Render the raw transcript stage"""
-    st.header("Raw Transcript Processing")
+def render_transcript_processing_stage():
+    """
+    Unified stage for transcript download, processing, and structured data generation
+    with a clear, chronological workflow
+    """
+    st.header("Transcript Processing & Learning")
     
-    # URL input
+    # Create steps for a clear workflow
+    steps = [
+        "1. Enter YouTube URL",
+        "2. Download Transcript",
+        "3. View Transcript Details",
+        "4. Generate Learning Exercise"
+    ]
+    
+    # Progress tracking
+    current_step = 0
+    
+    # URL input - Step 1
+    st.markdown("## 🔗 Enter YouTube URL")
     url = st.text_input(
-        "YouTube URL",
-        placeholder="Enter a Hindi lesson YouTube URL"
+        "YouTube URL", 
+        placeholder="Paste a Hindi lesson YouTube URL",
+        key="transcript_url_input"
     )
     
-    # Download button and processing
-    if url:
-        if st.button("Download Transcript"):
-            try:
-                downloader = YTTranscriptDownloader()
-                transcript = downloader.get_transcript(url)
-                if transcript:
-                    # Store the raw transcript text in session state
-                    transcript_text = "\n".join([entry['text'] for entry in transcript])
-                    st.session_state.transcript = transcript_text
-                    st.success("Transcript downloaded successfully!")
-                else:
-                    st.error("No transcript found for this video.")
-            except Exception as e:
-                st.error(f"Error downloading transcript: {str(e)}")
-
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Raw Transcript")
-        if st.session_state.transcript:
-            st.text_area(
-                label="Raw text",
-                value=st.session_state.transcript,
-                height=400,
-                disabled=True
-            )
-    
-        else:
-            st.info("No transcript loaded yet")
-    
-    with col2:
-        st.subheader("Transcript Stats")
-        if st.session_state.transcript:
-            # Calculate stats
-            hi_chars, total_chars = count_characters(st.session_state.transcript)
-            total_lines = len(st.session_state.transcript.split('\n'))
-            
-            # Display stats
-            st.metric("Total Characters", total_chars)
-            st.metric("Hindi Characters", hi_chars)
-            st.metric("Total Lines", total_lines)
-        else:
-            st.info("Load a transcript to see statistics")
-
-def render_structured_stage():
-    """Render the structured data stage"""
-    st.header("Structured Data Processing")
-        
-    # Check if transcript is available
-    if not st.session_state.get('transcript'):
-        st.warning("Please load a transcript first in the Raw Transcript section")
+    # Ensure URL is valid before proceeding
+    if not url:
+        st.info("Please enter a valid YouTube URL to begin.")
         return
     
-    # Process the current transcript
-    try:
-        # Preprocess transcript: remove newlines, normalize spaces
-        processed_transcript = ' '.join(st.session_state.transcript.split())
-        
-        # Extract structured data directly from the current transcript
-        structured_data = structured_data_with_genai(processed_transcript)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("Original Transcript")
-            st.text_area(
-                "Raw Transcript", 
-                value=st.session_state.transcript, 
-                height=300,
-                disabled=True
-            )
+    # Transcript Download - Step 2
+    st.markdown("## 📥 Download Transcript")
+    if st.button("Download Transcript", key="download_transcript_btn"):
+        try:
+            # Download transcript
+            downloader = YTTranscriptDownloader()
+            transcript = downloader.get_transcript(url)
             
-        with col2:
-            st.subheader("Structured Data Overview")
+            if transcript:
+                # Store the raw transcript text in session state
+                transcript_text = "\n".join([entry['text'] for entry in transcript])
+                st.session_state.transcript = transcript_text
+                st.success("Transcript downloaded successfully!")
+            else:
+                st.error("No transcript found for this video.")
+        except Exception as e:
+            st.error(f"Error downloading transcript: {str(e)}")
+    
+    # Check if transcript exists
+    if not st.session_state.get('transcript'):
+        st.warning("Download the transcript before proceeding.")
+        return
+    
+    # Transcript Details - Step 3
+    st.markdown("## 📄 Transcript Analysis")
+    
+    # Character and Language Analysis
+    hi_chars, total_chars = count_characters(st.session_state.transcript)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("Total Characters", total_chars)
+    
+    with col2:
+        st.metric("Hindi Characters", hi_chars)
+    
+    with col3:
+        st.metric("Hindi Character %", 
+                  f"{(hi_chars/total_chars * 100):.2f}%" if total_chars > 0 else "N/A")
+    
+    # Transcript Display
+    with st.expander("View Full Transcript"):
+        st.text_area(
+            label="Raw Transcript", 
+            value=st.session_state.transcript, 
+            height=300,
+            disabled=True
+        )
+    
+    # Structured Data Generation - Step 4
+    st.markdown("## 🧩 Generate Learning Exercise")
+    
+    if st.button("Create Learning Exercise", key="generate_structured_data_btn"):
+        try:
+            # Preprocess transcript: remove newlines, normalize spaces
+            processed_transcript = ' '.join(st.session_state.transcript.split())
             
-            # Create a more visually appealing display of key information
-            st.markdown("### 🌟 Transcript Insights")
+            # Extract structured data directly from the current transcript
+            structured_data = structured_data_with_genai(processed_transcript)
+            st.session_state.structured_data = structured_data
             
-            # Introduction card (first)
-            st.markdown("#### 📝 Introduction")
-            st.info(structured_data.get('introduction', 'No introduction available'))
+            # Display structured data details
+            render_structured_data_details(structured_data)
             
-            # Dialogue card (second)
-            st.markdown("#### 💬 Dialogue")
-            st.write(structured_data.get('dialogue', 'No dialogue available'))
-            
-            # Question card (third)
-            st.markdown("#### ❓ Key Question")
-            st.warning(structured_data.get('question', 'No question available'))
-        
-        # Detailed sections with expandable content
-        st.markdown("## 🔍 Detailed Breakdown")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Help/Clues Expander (hidden by default)
-            with st.expander("🔑 Help & Context", expanded=False):
-                st.markdown("**Contextual Clues:**")
-                st.write(structured_data.get('help_clues', 'No additional context available'))
-        
-        with col2:
-            # Answer Expander (hidden by default)
-            with st.expander("💡 Answer", expanded=False):
-                st.markdown("**Full Answer:**")
-                st.success(structured_data.get('answer', 'No answer available'))
-        
-        # Full JSON view in an expander
-        with st.expander("📊 Full Structured Data"):
-            st.json(structured_data)
-        
-        # Columns for save and vector store actions
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Option to save structured transcript
-            if st.button("💾 Save Structured Transcript"):
-                # Generate unique filename
-                import uuid
-                filename = f"transcript_{uuid.uuid4().hex[:8]}_structured.json"
-                
-                # Path to structured transcripts directory
-                output_dir = os.path.join(
-                    os.path.dirname(__file__), 
-                    '..', 
-                    'backend', 
-                    'structured_transcripts'
-                )
-                
-                # Ensure directory exists
-                os.makedirs(output_dir, exist_ok=True)
-                
-                # Full path for the new file
-                output_path = os.path.join(output_dir, filename)
-                
-                # Save structured data
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    json.dump(structured_data, f, ensure_ascii=False, indent=2)
-                
-                st.success(f"Structured transcript saved as {filename}")
-        
-        with col2:
-            # Button to build vector store
-            if st.button("🗃️ Build Vector Store"):
-                try:
-                    from backend.vector_db import TranscriptVectorDB
-                    
-                    # Read structured transcripts
-                    transcripts = TranscriptVectorDB.read_structured_transcripts()
-                    
-                    # Check if any transcripts were found
-                    if not transcripts:
-                        st.warning("No structured transcripts found. Save some transcripts first.")
-                        st.info("Go to the 'Structured Data' section and save some transcripts before building the vector store.")
-                        return
-                    
-                    # Initialize and populate vector DB
-                    vector_db = TranscriptVectorDB()
-                    
-                    # Optional: Reset collection before adding new transcripts
-                    vector_db.reset_collection()
-                    
-                    # Add transcripts
-                    vector_db.add_transcripts(transcripts)
-                    
-                    st.success(f"Vector store built with {len(transcripts)} transcripts!")
-                    
-                    # Optional: Display some sample search results
-                    with st.expander("🔍 Sample Vector Store Search"):
-                        # Perform a sample search
-                        results = vector_db.search_transcripts("language learning")
-                        
-                        if results:
-                            for result in results:
-                                st.markdown(f"**Title:** {result['metadata']['title']}")
-                                st.markdown(f"**Excerpt:** {result['document'][:200]}...")
-                                st.markdown(f"**Relevance Score:** {1 - result['distance']:.2f}")
-                                st.markdown("---")
-                        else:
-                            st.info("No search results found.")
-                
-                except ImportError as e:
-                    st.error(f"Missing dependencies: {e}")
-                    st.info("Ensure you have installed chromadb and sentence-transformers")
-                
-                except Exception as e:
-                    st.error(f"Error building vector store: {e}")
-                    
-                    # Provide more detailed troubleshooting information
-                    st.markdown("### Troubleshooting Tips:")
-                    st.markdown("1. Ensure Chroma DB is installed correctly")
-                    st.markdown("2. Check that you have write permissions in the project directory")
-                    st.markdown("3. Verify that structured transcripts exist")
-                    st.markdown("4. Check for any permission or disk space issues")
-        
-        # End of vector store section
-        
-    except Exception as e:
-        st.error(f"Error processing structured data: {e}")
+        except Exception as e:
+            st.error(f"Error processing structured data: {e}")
+    
+    # If structured data already exists, show it
+    elif st.session_state.get('structured_data'):
+        st.markdown("## 🎓 Previous Learning Exercise")
+        render_structured_data_details(st.session_state.structured_data)
 
-def render_rag_stage():
-    """Render the RAG implementation stage"""
-    st.header("RAG System")
+def render_structured_data_details(structured_data):
+    """
+    Render detailed view of structured data with save and vector store options
     
-    # Query input
-    query = st.text_input(
-        "Test Query",
-        placeholder="Enter a question about Hindi..."
-    )
-    
+    Args:
+        structured_data (dict): Processed structured data from transcript
+    """
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("Retrieved Context")
-        st.info("Retrieved contexts will appear here")
+        st.subheader("Learning Scenario")
         
+        # Context/Introduction
+        st.markdown("#### 📝 Context")
+        st.info(structured_data.get('introduction', 'No context available'))
+        
+        # Dialogue
+        st.markdown("#### 💬 Dialogue")
+        st.write(structured_data.get('dialogue', 'No dialogue available'))
+        
+        # Question
+        st.markdown("#### ❓ Learning Question")
+        st.warning(structured_data.get('question', 'No question generated'))
+    
     with col2:
-        st.subheader("Generated Response")
-        st.info("Generated response will appear here")
+        st.subheader("Interactive Exercise")
+        
+        # Multiple Choice Options
+        options = structured_data.get('options', [])
+        answer = structured_data.get('answer', '')
+        
+        # Ensure we have options
+        if not options:
+            st.warning("No multiple-choice options available.")
+            return
+        
+        # Radio button selection for multiple choice
+        user_selection = st.radio(
+            "Select the correct answer:", 
+            options=options
+        )
+        
+        # Check answer
+        if st.button("Submit Answer"):
+            if user_selection == answer:
+                st.success("🎉 Correct! Great job understanding the dialogue.")
+            else:
+                st.error(f"Incorrect. The correct answer is: {answer}")
+    
+    # Action Buttons
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Save Structured Transcript
+        if st.button("💾 Save Structured Transcript"):
+            # Generate unique filename
+            import uuid
+            filename = f"transcript_{uuid.uuid4().hex[:8]}_structured.json"
+            
+            # Path to structured transcripts directory
+            output_dir = os.path.join(
+                os.path.dirname(__file__), 
+                '..', 
+                'backend', 
+                'structured_transcripts'
+            )
+            
+            # Ensure directory exists
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Full path for the new file
+            output_path = os.path.join(output_dir, filename)
+            
+            # Save structured data
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(structured_data, f, ensure_ascii=False, indent=2)
+            
+            st.success(f"Structured transcript saved as {filename}")
+    
+    with col2:
+        # Build Vector Store
+        if st.button("🗃️ Build Vector Store"):
+            try:
+                from backend.vector_db import TranscriptVectorDB
+                
+                # Read structured transcripts
+                transcripts = TranscriptVectorDB.read_structured_transcripts()
+                
+                # Check if any transcripts were found
+                if not transcripts:
+                    st.warning("No structured transcripts found. Save some transcripts first.")
+                    return
+                
+                # Initialize and populate vector DB
+                vector_db = TranscriptVectorDB()
+                
+                # Optional: Reset collection before adding new transcripts
+                vector_db.reset_collection()
+                
+                # Add transcripts
+                vector_db.add_transcripts(transcripts)
+                
+                st.success(f"Vector store built with {len(transcripts)} transcripts!")
+                
+                # Optional: Display some sample search results
+                with st.expander("🔍 Sample Vector Store Search"):
+                    # Perform a sample search
+                    results = vector_db.search_transcripts("language learning")
+                    
+                    if results:
+                        for result in results:
+                            st.markdown(f"**Title:** {result['metadata']['title']}")
+                            st.markdown(f"**Excerpt:** {result['document'][:200]}...")
+                            st.markdown(f"**Relevance Score:** {1 - result['distance']:.2f}")
+                            st.markdown("---")
+                    else:
+                        st.info("No search results found.")
+            
+            except ImportError as e:
+                st.error(f"Missing dependencies: {e}")
+                st.info("Ensure you have installed chromadb and sentence-transformers")
+            
+            except Exception as e:
+                st.error(f"Error building vector store: {e}")
+                
+                # Provide more detailed troubleshooting information
+                st.markdown("### Troubleshooting Tips:")
+                st.markdown("1. Ensure Chroma DB is installed correctly")
+                st.markdown("2. Check that you have write permissions in the project directory")
+                st.markdown("3. Verify that structured transcripts exist")
+                st.markdown("4. Check for any permission or disk space issues")
 
 def render_interactive_stage():
     """Render the interactive learning stage"""
@@ -433,19 +425,16 @@ def render_interactive_stage():
         st.info("Feedback will appear here")
 
 def main():
+    """Main application rendering logic"""
     render_header()
     selected_stage = render_sidebar()
-    
+
     # Render appropriate stage
     if selected_stage == "1. Chat with Nova":
         render_chat_stage()
-    elif selected_stage == "2. Raw Transcript":
-        render_transcript_stage()
-    elif selected_stage == "3. Structured Data":
-        render_structured_stage()
-    elif selected_stage == "4. RAG Implementation":
-        render_rag_stage()
-    elif selected_stage == "5. Interactive Learning":
+    elif selected_stage == "2. Transcript Processing":
+        render_transcript_processing_stage()
+    elif selected_stage == "3. Interactive Learning":
         render_interactive_stage()
     
     # Debug section at the bottom
