@@ -65,3 +65,5 @@ go.work
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+**/chroma_db/**/*
