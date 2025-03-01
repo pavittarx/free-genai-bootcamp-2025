@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional, List
 
 from .vector_db import TranscriptVectorDB
 from .chat import OpenRouterChat
+from .audio_generator import AudioGenerator
 
 class RAGAssistant:
     """
@@ -17,6 +18,7 @@ class RAGAssistant:
         """
         self.vector_db = TranscriptVectorDB()
         self.chat = OpenRouterChat()
+        self.audio_generator = AudioGenerator()
     
     def generate_learning_exercise(
         self, 
@@ -24,14 +26,14 @@ class RAGAssistant:
         difficulty: str = 'Intermediate'
     ) -> Dict[str, Any]:
         """
-        Generate a learning exercise using generative AI
+        Generate a learning exercise using generative AI with audio support
         
         Args:
             topic (Optional[str]): Specific topic for exercise generation
             difficulty (str): Difficulty level of the exercise
         
         Returns:
-            Dict containing structured learning exercise
+            Dict containing structured learning exercise with audio path
         """
         # Difficulty-based complexity mapping
         difficulty_levels = {
@@ -118,6 +120,12 @@ class RAGAssistant:
                     exercise.get('answer', '')
                 )
             
+            # Generate single audio for the entire exercise
+            exercise['audio'] = self.audio_generator.generate_audio(exercise)
+            
+            # Cleanup old audio files
+            self.audio_generator.cleanup_old_audio_files()
+            
             return exercise
         
         except Exception as e:
@@ -125,7 +133,7 @@ class RAGAssistant:
             print(f"Error generating learning exercise: {e}")
             
             # Fallback exercise generation
-            return {
+            fallback_exercise = {
                 "introduction": "एक रोचक संवाद",
                 "dialogue": "यह एक सामान्य संवाद है जो हिंदी सीखने में मदद करेगा।",
                 "question": "इस संवाद का मुख्य विषय क्या है?",
@@ -137,6 +145,14 @@ class RAGAssistant:
                 ],
                 "answer": "शिक्षा"
             }
+            
+            # Generate single audio for fallback exercise
+            fallback_exercise['audio'] = self.audio_generator.generate_audio(fallback_exercise)
+            
+            # Cleanup old audio files
+            self.audio_generator.cleanup_old_audio_files()
+            
+            return fallback_exercise
     
     def _parse_exercise_response(self, response: str) -> Dict[str, Any]:
         """
@@ -165,7 +181,9 @@ class RAGAssistant:
             "dialogue": response,
             "question": "",
             "options": [],
-            "answer": response
+            "answer": response,
+            "audio": "",
+            "option_audio": []
         }
     
     def _generate_multiple_options(self, answer: str) -> List[str]:
