@@ -18,15 +18,17 @@ This would include everyday conversations in target language, such as ordering f
 - ASR / TTS support might not be available for hindi language.
 - Videos might be missing transctipts needed.
 - The technical expertise with technologies used is missing. 
+- Comprehension Exercises are without subtitles. The auto generated subtitles are hard to decipher.
 
 ## Technical Requirements 
-- Chat w/ LLM Model
-- Generate and Save Transcripts
-- Generate structured data from transcripts
-- Vector DB (ChromaDB)
-- OpenRouter API, Google Flash Model
-- ASR / TTS (Optional)
-
+- Chat is done via OpenRouter Model, using Google Flash Model
+- ChromaDB is used as vector store
+- Transcripts are cleaned up via GenAI model, which are then used to generated exercises in required format. 
+- Structured Data is generated via GenAI model, which is used to generate exercises.
+- The app should be able to handle a conversation with the user.
+- There is ability to load transcripts into vector store via Youtube Url.
+- Audio is generated via gTTS library, Polly model is not accessible.  
+- Audio is generated on demand using the generated exercise.
 
 ## Technical Restrictions
 - Youtube Video url should be provied to pull the transcript
