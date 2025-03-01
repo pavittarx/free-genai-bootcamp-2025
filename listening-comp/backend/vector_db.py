@@ -1,11 +1,12 @@
 import os
-from typing import List, Dict, Any
-
+from typing import List, Dict, Any, Optional
 import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 import json
 import glob
+import random
+from backend.chat import OpenRouterChat
 
 class TranscriptVectorDB:
     def __init__(self, collection_name: str = "transcripts"):
@@ -141,6 +142,125 @@ class TranscriptVectorDB:
             formatted_results.append(result)
         
         return formatted_results
+
+    def generate_learning_exercise(
+            self, 
+            difficulty: str = 'मध्यम'
+        ) -> Dict[str, Any]:
+        """
+        Generate a learning exercise based on difficulty level.
+        
+        Args:
+            difficulty (str): Difficulty level of the exercise
+        
+        Returns:
+            Dict containing structured learning exercise
+        """
+        # Initialize chat client
+        chat_client = OpenRouterChat()
+        
+        # Comprehensive list of context topics for diverse exercise generation
+        context_topics = [
+            "Everyday conversations", 
+            "Office dialogues", 
+            "Social situations", 
+            "Educational discussions", 
+            "Travel and tourism", 
+            "Family and relationships", 
+            "Technology and innovation", 
+            "Environment and nature", 
+            "Health and wellness", 
+            "Art and culture"
+        ]
+        
+        # Difficulty-based complexity mapping
+        difficulty_levels = {
+            'शुरुआती': {
+                'complexity': 'Simple, basic vocabulary',
+                'sentence_structure': 'Short, straightforward sentences',
+                'language_level': 'Beginner level Hindi'
+            },
+            'मध्यम': {
+                'complexity': 'Moderate vocabulary, some idiomatic expressions',
+                'sentence_structure': 'Mixed sentence lengths, some complex structures',
+                'language_level': 'Intermediate level Hindi'
+            },
+            'उन्नत': {
+                'complexity': 'Advanced vocabulary, nuanced expressions',
+                'sentence_structure': 'Complex, varied sentence structures',
+                'language_level': 'Advanced level Hindi'
+            }
+        }
+        
+        # Select a random context topic
+        selected_topic = random.choice(context_topics)
+        
+        # Prepare the prompt for exercise generation
+        prompt = f"""
+        Generate a structured Hindi language learning exercise:
+
+        Exercise Generation Guidelines:
+        - Context Topic: {selected_topic}
+        - Difficulty Level: {difficulty}
+        - Language Complexity: {difficulty_levels.get(difficulty, difficulty_levels['मध्यम'])['complexity']}
+        - Sentence Structure: {difficulty_levels.get(difficulty, difficulty_levels['मध्यम'])['sentence_structure']}
+        - Language Level: {difficulty_levels.get(difficulty, difficulty_levels['मध्यम'])['language_level']}
+
+        MANDATORY OUTPUT FORMAT:
+        {{
+            "introduction": "Brief context-setting phrase (15-20 words)",
+            "dialogue": "Conversation text in natural Hindi",
+            "question": "A specific comprehension or language question",
+            "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+            "answer": "Correct answer from the options"
+        }}
+
+        CRITICAL INSTRUCTIONS:
+        - Use natural, conversational Hindi
+        - Ensure cultural authenticity
+        - Create engaging, contextually relevant content
+        - Avoid generic or placeholder text
+        """
+        
+        # Generate exercise using chat model
+        try:
+            # Generate response
+            response = chat_client.generate_response(prompt)
+            
+            # Parse the JSON response
+            from backend.structured_data import parse_json_response
+            exercise = parse_json_response(response)
+            
+            # Validate exercise structure
+            if not exercise or not isinstance(exercise, dict):
+                raise ValueError("Invalid exercise structure generated")
+            
+            # Ensure options are generated if not present
+            if not exercise.get('options') or len(exercise['options']) < 4:
+                from backend.structured_data import generate_multiple_options
+                exercise['options'] = generate_multiple_options(
+                    exercise.get('answer', '')
+                )
+            
+            return exercise
+        
+        except Exception as e:
+            # Comprehensive error logging
+            print(f"Error generating learning exercise: {e}")
+            
+            # Fallback exercise generation
+            return {
+                "introduction": "एक रोचक संवाद",
+                "dialogue": "यह एक सामान्य संवाद है जो हिंदी सीखने में मदद करेगा।",
+                "question": "इस संवाद का मुख्य विषय क्या है?",
+                "options": [
+                    "शिक्षा", 
+                    "यात्रा", 
+                    "परिवार", 
+                    "तकनीक"
+                ],
+                "answer": "शिक्षा"
+            }
 
     @classmethod
     def read_structured_transcripts(cls, directory: str = "./backend/structured_transcripts") -> List[Dict[str, Any]]:

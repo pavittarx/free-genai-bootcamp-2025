@@ -7,6 +7,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.transcript import YTTranscriptDownloader
 from backend.chat import OpenRouterChat
 from backend.structured_data import structured_data_with_genai
+from backend.rag import RAGAssistant
+from backend.vector_db import TranscriptVectorDB
 
 # Page config
 st.set_page_config(
@@ -305,6 +307,9 @@ def render_structured_data_details(structured_data):
             options=options
         )
         
+        # Update selected answer in session state
+        st.session_state.selected_answer = user_selection
+        
         # Check answer
         if st.button("Submit Answer"):
             if user_selection == answer:
@@ -396,33 +401,97 @@ def render_structured_data_details(structured_data):
                 st.markdown("4. Check for any permission or disk space issues")
 
 def render_interactive_stage():
-    """Render the interactive learning stage"""
-    st.header("Interactive Learning")
+    """
+    Render the interactive learning stage with Hindi language exercise
+    Focuses on natural language flow and structured learning experience
+    """
+    st.header("🌟 हिंदी भाषा अभ्यास (Hindi Language Practice)")
     
-    practice_type = st.selectbox(
-        "Select Practice Type",
-        ["Dialogue Practice", "Vocabulary Quiz", "Listening Exercise"]
-    )
+    # Initialize RAG Assistant
+    rag_assistant = RAGAssistant()
     
-    col1, col2 = st.columns([2, 1])
+    # Reset session state for exercise and answer tracking
+    if 'exercise' not in st.session_state or st.button("नया अभ्यास बनाएं (Generate New Exercise)", type="primary"):
+        try:
+            # Topic and Difficulty Selection
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                difficulty = st.selectbox(
+                    "कठिनाई स्तर चुनें (Select Difficulty Level)", 
+                    [
+                        "शुरुआती (Beginner)", 
+                        "मध्यम (Intermediate)", 
+                        "उन्नत (Advanced)"
+                    ]
+                )
+            
+            with col2:
+                # Get topics from vector store
+                topics = rag_assistant.vector_db.read_structured_transcripts()
+                topic_list = list(set([
+                    transcript.get('title', 'सामान्य भाषा सीखना (General Language Learning)') 
+                    for transcript in topics
+                ]))
+                selected_topic = st.selectbox(
+                    "विषय चुनें (Select Topic)", 
+                    topic_list
+                )
+            
+            # Generate learning exercise
+            st.session_state.exercise = rag_assistant.generate_learning_exercise(
+                topic=selected_topic, 
+                difficulty=difficulty.split()[0]  # Extract difficulty level
+            )
+            
+            # Reset answer tracking
+            st.session_state.answer_submitted = False
+            st.session_state.selected_answer = None
+        
+        except Exception as e:
+            st.error(f"अभ्यास उत्पन्न करने में त्रुटि (Error generating exercise): {e}")
+            st.info("कृपया फिर से प्रयास करें। (Please try again.)")
+            return
     
-    with col1:
-        st.subheader("Practice Scenario")
-        # Placeholder for scenario
-        st.info("Practice scenario will appear here")
-        
-        # Placeholder for multiple choice
-        options = ["Option 1", "Option 2", "Option 3", "Option 4"]
-        selected = st.radio("Choose your answer:", options)
-        
-    with col2:
-        st.subheader("Audio")
-        # Placeholder for audio player
-        st.info("Audio will appear here")
-        
-        st.subheader("Feedback")
-        # Placeholder for feedback
-        st.info("Feedback will appear here")
+    # Display Exercise
+    if hasattr(st.session_state, 'exercise') and st.session_state.exercise:
+        # Exercise Display Container
+        with st.container(border=True):
+            # Introduction Section
+            st.markdown("### 🌈 परिचय (Introduction)")
+            st.markdown(f"**{st.session_state.exercise['introduction']}**")
+            
+            # Dialogue Section
+            st.markdown("### 💬 संवाद (Dialogue)")
+            st.markdown(st.session_state.exercise['dialogue'])
+            
+            # Question Section
+            st.markdown("### ❓ प्रश्न (Question)")
+            st.markdown(st.session_state.exercise['question'])
+            
+            # Multiple Choice Options
+            st.markdown("### 🔍 विकल्प (Options)")
+            selected_answer = st.radio(
+                "अपना उत्तर चुनें (Select your answer):", 
+                st.session_state.exercise['options'],
+                index=None,  # Ensures no default selection
+                key=f"answer_radio_{hash(st.session_state.exercise['question'])}"
+            )
+            
+            # Update selected answer in session state
+            st.session_state.selected_answer = selected_answer
+            
+            # Check Answer Button
+            if st.button("उत्तर जाँच करें (Check Answer)", type="secondary"):
+                # Validate answer selection
+                if selected_answer is None:
+                    st.warning("कृपया एक उत्तर चुनें (Please select an answer)")
+                else:
+                    # Check if answer is correct
+                    if selected_answer == st.session_state.exercise['answer']:
+                        st.success("🎉 बधाई हो! आपका उत्तर सही है। (Congratulations! Your answer is correct.)")
+                    else:
+                        st.error(f"क्षमा करें, यह सही उत्तर नहीं है। सही उत्तर है: {st.session_state.exercise['answer']} (Sorry, this is not the correct answer.)")
 
 def main():
     """Main application rendering logic"""
