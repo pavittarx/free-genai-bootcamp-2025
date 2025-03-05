@@ -6,12 +6,22 @@ The word can be written digitally or on paper. The image of the word can be capt
 - Whether or not an OCR library will be available for hindi language.
 - No prior experience with vision encoder decoder models.
 
-## Technical Requirements
+## Technical Spec
 - The app will be using Streamlit for frontend. 
-- The will use existing lang portal backend for getting words.
-- The app will use openrouter AI model for word generation and checking for answers.
+- The will use existing lang portal backend for getting groups. 
+- Existing Words will be used from LangPortal, as it already supports fetching random words by group. There are around 200 words in total.  
 - The app will evaluate words for the sake of simplicity.
-- Poetry will be used for packaging the application.
+- Poetry used for packaging the application.
+- TessaractOCR is being used for Hindi Lang Extraction.
 
+## Extras
+You need to install tessaract in order to use OCR.
 
-The application could be launched from existing lang portal project into its own separate app running on a different port.
+```shell
+    # Install Tessaract
+    sudo apt-get install tesseract-ocr
+    # Install Hindi Lang Pack
+    sudo apt-get install tesseract-ocr-hin
+
+    export TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+```
