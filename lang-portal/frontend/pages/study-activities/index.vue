@@ -10,11 +10,11 @@
       </div>
     </template>
 
-    <StudyActivityPopup ref="activityPopup">
+    <StudyActivityPopup ref="activityPopup" :activityId="selectedActivity ? Number(selectedActivity.id) : 0">
       <component 
         v-if="selectedActivity"
         :is="getActivityComponent(selectedActivity.name)"
-        :activity-id="selectedActivity.id"
+        :activity-id="selectedActivity?.id || 0"
       />
     </StudyActivityPopup>
 
@@ -66,7 +66,7 @@ import StudyActivityPopup from '~/components/StudyActivityPopup.vue'
 import UnscrambleWordsActivity from '~/components/UnscrambleWordsActivity.vue'
 
 interface StudyActivity {
-  id: string
+  id: number
   name: string
   description: string
   image: string
@@ -79,8 +79,9 @@ const selectedActivity = ref<StudyActivity | null>(null)
 
 const ACTIVITY_IMAGES: Record<string, string> = {
   'Unscramble Words': '/game-1.jpg',
-  'Group Words': '/game-2.jpg',
-  'Complete the Word': '/game-3.jpg'
+  'Writing Practice': '/game-2.jpg',
+  'Complete the Word': '/game-3.jpg',
+  'Default': '/default-activity.jpg'
 }
 
 const { 
@@ -130,9 +131,13 @@ const getActivityComponent = (activityName: string) => {
 }
 
 const launchActivity = (activity: StudyActivity) => {
+  if (activity.name === 'Writing Practice') {
+    window.open('http://localhost:8002', '_blank');
+    return;
+  }
   selectedActivity.value = activity
   if (activityPopup.value && 'open' in activityPopup.value) {
-    (activityPopup.value as { open: () => void }).open()
+    (activityPopup.value as { open: (props: { ref: string, activityId: number }) => void }).open({ ref: 'activityPopup', activityId: activity.id })
   }
 }
 
