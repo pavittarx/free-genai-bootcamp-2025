@@ -132,7 +132,7 @@ const getActivityComponent = (activityName: string) => {
 
 const launchActivity = (activity: StudyActivity) => {
   if (activity.name === 'Writing Practice') {
-    window.open('http://localhost:8002', '_blank');
+    window.open('http://localhost:8501', '_blank');
     return;
   }
   selectedActivity.value = activity
