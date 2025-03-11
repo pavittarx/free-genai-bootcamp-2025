@@ -69,7 +69,7 @@ const router = useRouter()
 
 const ACTIVITY_IMAGES: Record<string, string> = {
   'Unscramble Words': '/game-1.jpg',
-  'Word Match': '/game-2.jpg',
+  'Writing Practice': '/game-2.jpg',
   'Sentence Constructor': '/game-3.jpg',
   'Default': '/default-activity.jpg'
 }
@@ -117,7 +117,7 @@ const startActivity = () => {
   if (activity.value) {
     router.push(`/study-activities/${activity.value.id}/launch`)
   }
-}
+} 
 </script>
 
 <style scoped>
