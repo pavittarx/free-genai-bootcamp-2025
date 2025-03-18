@@ -1,22 +1,21 @@
-version: '3.8'
 services:
-  vllm:
-    build: .
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    environment:
-      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
-      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-    volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface
+  ollama:
+    image: ollama/ollama:latest
     ports:
-      - "8000:8000"
-    ipc: host
-    container_name: vllm_container
-    # command: ["--model", "mistralai/Mistral-7B-v0.1", "--dtype", "half"]
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+    command: ["serve"]
+
+  model-puller:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    command: ["pull", "gemma3:1b"]
+    restart: "no"
+
+volumes:
+  ollama_data:

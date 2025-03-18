@@ -1,13 +1,11 @@
-FROM vllm/vllm-openai:latest
+FROM ollama/ollama:latest
 
 # Set environment variables
-ENV HUGGING_FACE_HUB_TOKEN=""
-
-# Create cache directory
-RUN mkdir -p /root/.cache/huggingface
+ENV OLLAMA_HOST=0.0.0.0
+ENV OLLAMA_PORT=11434
 
 # Expose the port
-EXPOSE 8000
+EXPOSE 11434
 
-# Set default command
-CMD ["--model", "meta-llama/Llama-3.2-1B-Instruct", "--dtype", "half", "--gpu-memory-utilization", "0.8", "--swap-space", "2"]
+# Set default command to start Ollama
+CMD ["serve"]
