@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  vllm:
+    build: .
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN}
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    ipc: host
+    container_name: vllm_container
+    # command: ["--model", "mistralai/Mistral-7B-v0.1", "--dtype", "half"]
